@@ -2,6 +2,7 @@ import express, {Request, Response} from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import path from 'path'
+import jwt from 'jsonwebtoken'
 import { fileURLToPath } from 'url'
 import { register, login } from './userAuth'
 
@@ -18,9 +19,26 @@ app.use(express.json())
 app.post('/register', async (req: Request, res: Response) => {
   try {
     const values = req.body
-    await register(values)
+    const data = await register(values)
 
-    res.status(200).json('Registeration was successful')
+    // Generate JWT Token
+    const JWTSecret = process.env.JWT_SECRET
+    console.log('jwt secret is', JWTSecret)
+    const token = jwt.sign(
+      { userId: data.user.id, userRole: data.user.role }, 
+      JWTSecret, 
+      { expiresIn: '1h'}
+    )
+    
+    // Store the token in cookies
+    res.cookie('token', token, { 
+      httpOnly: true, 
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 3600000 // 1 hour
+    })
+
+    res.status(200).json(data)
   } catch (err) {
     if (err.status) {
       res.status(err.status).json({ error: err.message });
@@ -33,10 +51,28 @@ app.post('/register', async (req: Request, res: Response) => {
 app.get('/login', async (req: Request, res: Response) => {
   try {
     const loginInfo = req.query
-    const user = await login(loginInfo)
+    const data = await login(loginInfo)
+    console.log('user is', data)
+
+    // Generate JWT Token
+    const JWTSecret = process.env.JWT_SECRET
+    console.log('jwt secret is', JWTSecret)
+    const token = jwt.sign(
+      { userId: data.user.id, userRole: data.user.role }, 
+      JWTSecret, 
+      { expiresIn: '1h'}
+    )
     
-    // Create JWT Token here!
-    res.status(200).json(user)
+    // Store the token in cookies
+    res.cookie('token', token, { 
+      httpOnly: true, 
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 3600000 // 1 hour
+    })
+
+    // Return user data fetched from the DB without the password
+    res.status(200).json(data)
   } catch (err) {
     if (err.status) {
       res.status(err.status).json({ error: err.message })
