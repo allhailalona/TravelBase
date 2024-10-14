@@ -39,6 +39,7 @@ register for users only:
     - no users with same email
     - password minimum 4 chars
     - onFinish navigate to vacations page
+    - english abc only for first and last name
 
 users interface:
   - can only be accessed by logged in users:
@@ -121,3 +122,6 @@ also unit testing is required, better check it out
 bonus:
   package it all in a docker-compose up command
   upload it to cloud NOTE
+
+
+Explain the JOIN thing, I think it's a good example of what u discussed with Gal previously
