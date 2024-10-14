@@ -1,0 +1,123 @@
+3 mysql dbs
+  users:
+    user id
+    first name
+    last name
+    email
+    password
+    role - admin/user
+
+  vacations:
+    vacation id
+    destination
+    description
+    starting date
+    ending date
+    price
+    image in URL
+
+  followers: 
+    user id
+    vacation id
+  (which user is following which vacations) this will actually only be used for stats... 
+  I don't think there is a need to JOIN table just for this
+
+login for users n admin: an options to register below
+  email and password
+  validation:
+  - all fields required
+  - valid email string
+  - min 4 chars password
+  - something went wrong for invalid credentials
+  - navigate to vacations page onFinish
+
+register for users only:
+  email, password, first name, last name
+  validation:
+    - all fields required
+    - valid email string
+    - no users with same email
+    - password minimum 4 chars
+    - onFinish navigate to vacations page
+
+users interface:
+  - can only be accessed by logged in users:
+    a. validate on page load with JWT token
+    b. invalid users that try to access this page with address will be redirected to login page
+  - vacations are to be shown in cards each showing:
+    a. vacation name
+    b. vacation desc
+    c. vacation starting ending taime
+    d. price
+    e. number of followers
+    f. is the user following vacation
+  - 10 cards per page with pagination
+  - the user can follow/unfollow vacations
+  - sort cards by asc. vacation starting date
+  - filter checkboxes:
+    a. only vacations the user is following
+    b. only vacations that havent' begun yet
+    c. only currently active vacations - those that have begun but not ended
+  - sort asc. and desc. by the vacation's starting date
+  - show user name and logoug with 'are u sure pop up' besides it
+
+  each action is to be accompanied with a validation token, if there's something wrong then output it and redirect to login page
+
+admin interface:
+  - can only be accessed by logged in admins:
+    a. validate on page load with JWT token
+    b. invalid users that try to access this page with address will be redirected to login page
+  - vacations are to be shown in cards each showing:
+    a. vacation name
+    b. vacation desc
+    c. vacation starting ending taime
+    d. price
+    e. delete
+    f. edit
+  - 10 cards per page with pagination
+  - admin CANNOT follow/unfollow vacations
+  - add a vacation button on top page redirect onClick to add-vacation page and show:
+    a. destination
+    b. description
+    c. starting date
+    d. ending date
+    e. price
+    f. cover image (nice interactive add image comp)
+    g. add vacation button
+    e. cancel and redirect back to vacations page
+    validation:
+    a. all fields required
+    b. only accessible to admin, redirect users trying to get here by address to login page
+    c. price must be between 1-10k dollars
+    d. cannot pick an ending date earlier than starting date
+    e. cannot pick past dates
+    f. images are to be saved as urls in database... the official request is to save them in a seperate table
+      alongside the url but this is arduously unnecessary NOTE
+  - edit vacation button on each vacation card - redirect (place those instead of the following button):
+    contains the same fields as the add a vacation card
+    a. only accessible to admin, redirect users trying to get here by address to login page
+    b. the official instructions are to require all fields, I think it would be better to show the existing values in the 
+      form, allowing the admin to change only what he wishes NOTE
+    c. prices between  1-10k dollars
+    d this time u can choose past events to 'renew' a past vacation
+    e. u can't however pick an ending date earlier than starting date
+  - delete vacation button on each vacation card - and 'are u sure?' pop up (place those instead of the following button)
+  - stats page - redirect and show the following:
+    a. inaccessible to unauthorized user, redirect to login on enter
+    a. a diagram of vacations and the amount of followers for each x axis is vacations and y axis is followers
+    b. export and csv file to be opened with excel should look like this:
+      vacations, followers
+      paris, 4
+      montenegro, 3
+      madrid, 14
+      jerusalem, 8
+  - show user name and logoug with 'are u sure pop up' besides it
+
+  each action is to be accompanied with a validation token, if there's something wrong then output it and redirect to login page
+
+
+also unit testing is required, better check it out
+
+bonus:
+  package it all in a docker-compose up command
+  upload it to cloud NOTE
