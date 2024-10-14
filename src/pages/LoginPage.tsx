@@ -1,9 +1,26 @@
 import { Link } from 'react-router-dom'
-import { Form, Input, Button } from 'antd'
+import { Form, Input, Button, message } from 'antd'
+import { UserAuthForms } from '../../types'
 
 export default function LoginPage(): JSX.Element {
-  const handleLogin = async () => {
-    console.log('hello from handleLogin')
+  const handleLogin = async (values: UserAuthForms) => {
+    console.log('login values are', values)
+
+    const params = new URLSearchParams(values as Record<string, string>)
+    const url = `http://localhost:3000/login?${params.toString()}`
+
+    const res = await fetch(url, {method: 'GET'})
+
+    // The error handling here is intentionally vague as instructed to increase security
+    if (!res.ok) {
+      message.error('Something Went Wrong, Try Again!')
+      throw new Error(
+        `Error in login request`
+      )
+    }
+
+    message.success('logged in successfully')
+    // Redirect here to /user/vacations
   }
   
   return (

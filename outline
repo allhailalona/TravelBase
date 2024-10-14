@@ -42,9 +42,13 @@ register for users only:
     - english abc only for first and last name
 
 users interface:
-  - can only be accessed by logged in users:
-    a. validate on page load with JWT token
-    b. invalid users that try to access this page with address will be redirected to login page
+  - can only be accessed by logged in users
+    b. successful login will fetch user data ONLY! not the vacations! to split request:
+    to avoid crashing all requests if one fails
+    better security measures 
+    b. the token would be created after a successful login
+    a. vacations are fetched on page load if token is valid, and NOT in the successful login request
+    c. invalid users that try to access this page with address will be redirected to login page
   - vacations are to be shown in cards each showing:
     a. vacation name
     b. vacation desc
@@ -125,3 +129,5 @@ bonus:
 
 
 Explain the JOIN thing, I think it's a good example of what u discussed with Gal previously
+Docker should have a specified port... perhaps notify Gal about it... Since he might have other ports active while attempting to connect
+we can't try to connect to each port like with the docker.compose.yml, which we should change as well

@@ -1,9 +1,38 @@
-import { Link } from 'react-router-dom'
-import { Form, Input, Button } from 'antd'
+import { Link, useNavigate } from 'react-router-dom'
+import { Form, Input, Button, message } from 'antd'
+import { UserAuthForms } from '../../types'
 
 export default function RegisterationPage(): JSX.Element {
-  const handleRegisteration = async (values: any) => {
+  const handleRegisteration = async (values: UserAuthForms) => {
     console.log('Registration data:', values)
+    // Make sure there isn't already a user with this email
+    const res = await fetch('http://localhost:3000/register', {
+      method: 'POST', 
+      headers: {
+        'Content-Type': 'application/json'
+      }, 
+      body: JSON.stringify(values)
+    })
+
+    // Remove else please
+    if (!res.ok) {
+      if (res.status === 409) {
+        message.error('Registration Failed: Email already exists');
+        throw new Error(
+          `Error in regsiteration request: Email already exists in DB}`
+        )
+      } 
+      const errorData = await res.json()
+      message.error('An Unknown Error Occured Please Contact Developer');
+      throw new Error(
+        `Error in regsiteration request ${errorData || 'unknown error'}`
+      )
+    } else {
+      console.log('request was successful')
+      message.success('Registeration Successful')
+      // Create token Before navigation!
+      // Redirect to /user/vacations and pop a sucess notification
+    }
   }
   
   return (
