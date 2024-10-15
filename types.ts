@@ -1,6 +1,39 @@
-export type UserAuthForms = {
-  email: string
-  password: string
+import { Dispatch, SetStateAction } from 'react'
+
+export type User = {
+  id?: number
+  email?: string
+  password?: string
   firstName?: string
   lastName?: string
+  role?: UserRole
+}
+
+export type Vacation = {
+  vacation_id: number
+  destination: string
+  description: string
+  starting_date: Date
+  ending_date: Date
+  price: string // To keep the fraction
+  image_url: string
+}
+
+export type GeneralContext = {
+  user: User | undefined
+  setUser: Dispatch<SetStateAction<User | undefined>>
+  vacations: Vacation[] | undefined
+  setVacations: Dispatch<SetStateAction<Vacation[] | undefined>>
+}
+
+export type UserRole = 'user' | 'admin' | undefined
+
+export type Tokens = {
+  accessToken: string
+  refreshToken: string
+}
+
+export type TokenPayload = {
+  userId: string
+  userRole: UserRole
 }

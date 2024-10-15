@@ -1,9 +1,13 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Form, Input, Button, message } from 'antd'
-import { UserAuthForms } from '../../types'
+import { useGeneralContext } from '../context/GeneralContext'
+import { User } from '../../types'
 
 export default function LoginPage(): JSX.Element {
-  const handleLogin = async (values: UserAuthForms) => {
+  const navigate = useNavigate()
+  const { setUser } = useGeneralContext()
+
+  const handleLogin = async (values: User) => {
     console.log('login values are', values)
 
     const params = new URLSearchParams(values as Record<string, string>)
@@ -18,9 +22,16 @@ export default function LoginPage(): JSX.Element {
         `Error in login request`
       )
     }
+    
+    const data = await res.json()
+    console.log('data returned is', data)
+    localStorage.setItem('accessToken', data.accessToken)
+    localStorage.setItem('refreshToken', data.refreshToken)
+    setUser(data) // Store user in context
 
-    message.success('logged in successfully')
-    // Redirect here to /user/vacations
+    // Done!
+    message.success('Login Successful')
+    navigate('/vacations')
   }
   
   return (

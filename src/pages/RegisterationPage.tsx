@@ -1,9 +1,13 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { Form, Input, Button, message } from 'antd'
-import { UserAuthForms } from '../../types'
+import { useGeneralContext } from '../context/GeneralContext'
+import { User } from '../../types'
 
 export default function RegisterationPage(): JSX.Element {
-  const handleRegisteration = async (values: UserAuthForms) => {
+  const navigate = useNavigate()
+  const { setUser } = useGeneralContext()
+
+  const handleRegisteration = async (values: User) => {
     console.log('Registration data:', values)
     // Make sure there isn't already a user with this email
     const res = await fetch('http://localhost:3000/register', {
@@ -27,12 +31,16 @@ export default function RegisterationPage(): JSX.Element {
       throw new Error(
         `Error in regsiteration request ${errorData || 'unknown error'}`
       )
-    } else {
-      console.log('request was successful')
-      message.success('Registeration Successful')
-      // Create token Before navigation!
-      // Redirect to /user/vacations and pop a sucess notification
     }
+    
+    const data = await res.json()
+    localStorage.setItem('accessToken', data.accessToken)
+    localStorage.setItem('refreshToken', data.refreshToken)
+    setUser(data) // Store user in context
+
+    // Done!
+    message.success('Registeration Successful')
+    navigate('/vacations')
   }
   
   return (

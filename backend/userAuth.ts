@@ -1,10 +1,7 @@
 import { pool } from './MySQLConnection'
-import { UserAuthForms } from '../types'
+import { User } from '../types'
 
-export async function register(values: UserAuthForms) {
-  console.log('email to see is', values.email)
-  // Is there already such an email?
-  // If there isn't, create a new user and reurn succes
+export async function register(values: User) {
   try {
     // Check if email already exists
     let [rows] = await pool.query('SELECT * FROM users WHERE email = ?', [values.email])
@@ -23,7 +20,7 @@ export async function register(values: UserAuthForms) {
     const userId = res.insertId
 
     // Construct the returned user obj out of userId and the front data passed... An alterantive could be fetching the entire row for safety measures
-    const user = {
+    const user: User = {
       id: userId, 
       firstName: values.firstName, 
       lastName: values.lastName, 
@@ -42,7 +39,7 @@ export async function register(values: UserAuthForms) {
   }
 }
 
-export async function login(loginInfo: UserAuthForms) {
+export async function login(loginInfo: User) {
   try {
     const [rows] = await pool.query(
       'SELECT * FROM users WHERE email = ? AND password = ?', 
@@ -51,7 +48,7 @@ export async function login(loginInfo: UserAuthForms) {
 
     // Again, error handling is intentionally vague
     if (rows.length === 0) {
-      throw { status: 500, message: 'Something Went Wrong, Try Again!' };
+      throw { status: 500, message: 'Something Went Wrong' }; // Invalid Credentials
     }
 
     const user = rows[0]
