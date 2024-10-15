@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { message, Pagination } from 'antd'
+import { message, Pagination, Checkbox } from 'antd'
 import { useNavigate } from 'react-router-dom'
 import { useGeneralContext } from '../context/GeneralContext'
 import AdminCard from '../comps/AdminCard'
@@ -7,12 +7,20 @@ import UserCard from '../comps/UserCard'
 import { UserRole, Vacation }  from '../../types'
 
 export default function VacationsPage(): JSX.Element {
+  // Context and state management
   const { setVacations, vacations } = useGeneralContext()
   const [role, setRole] = useState<UserRole>(undefined)
-
+  
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10; // Number of vacations per page
+  const itemsPerPage = 10;
+  
+  // Sorting state (only for users)
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
+  // Filter states (only for users)
+  const [showNotBegun, setShowNotBegun] = useState(false);
+  const [showActive, setShowActive] = useState(false);
 
   const navigate = useNavigate()
 
@@ -89,18 +97,54 @@ export default function VacationsPage(): JSX.Element {
     helperFunc()
   }, [])
 
-  // Pagination calculations
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  // Slice the vacations array to get only the items for the current page
-  const currentVacations = vacations?.slice(indexOfFirstItem, indexOfLastItem);
+  // Apply filters and sorting
+  const filteredAndSortedVacations = vacations
+  ? vacations.filter(vacation => {
+      // Get current date and vacation dates
+      const now = new Date();
+      const startDate = new Date(vacation.starting_date);
+      const endDate = new Date(vacation.ending_date);
 
-  // Handle page change in pagination
+      // Apply filters based on checkbox states
+      if (showNotBegun && !showActive) {
+        // Show only vacations that have not begun yet
+        return startDate > now;
+      } else if (!showNotBegun && showActive) {
+        // Show only vacations that are currently active
+        return startDate <= now && endDate >= now;
+      } else if (showNotBegun && showActive) {
+        // Show vacations that either haven't begun or are currently active
+        return startDate > now || (startDate <= now && endDate >= now);
+      }
+      // If no filters are applied, show all vacations
+      return true;
+    }).sort((a, b) => {
+      // Only apply sorting for user role
+      if (role === 'user') {
+        const dateA = new Date(a.starting_date).getTime();
+        const dateB = new Date(b.starting_date).getTime();
+        // Sort ascending or descending based on sortOrder
+        return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+      }
+      // For admin role, maintain original order
+      return 0;
+    })
+  : []; // If vacations is null/undefined, return empty array
+
+  // Get the vacations for the current page
+  const currentVacations = filteredAndSortedVacations.slice(
+    (currentPage - 1) * itemsPerPage, 
+    currentPage * itemsPerPage
+  );
+
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
-  // Render appropriate card based on user role
+  const toggleSortOrder = () => {
+    setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+  };
+
   const renderVacationCard = (vacation: Vacation) => {
     if (role === 'admin') {
       return <AdminCard key={vacation.vacation_id} vacation={vacation} />;
@@ -114,13 +158,36 @@ export default function VacationsPage(): JSX.Element {
       <p className="text-lg font-bold my-4">User is {role}</p>
       {vacations && vacations.length > 0 ? (
         <>
+          {role === 'user' && (
+            <div className="mb-4">
+              <button 
+                onClick={toggleSortOrder}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 mr-4"
+              >
+                Sort by Date {sortOrder === 'asc' ? '↑' : '↓'}
+              </button>
+              <Checkbox 
+                checked={showNotBegun}
+                onChange={e => setShowNotBegun(e.target.checked)}
+              >
+                Show only vacations that have not begun
+              </Checkbox>
+              <Checkbox 
+                checked={showActive}
+                onChange={e => setShowActive(e.target.checked)}
+              >
+                Show only currently active vacations
+              </Checkbox>
+            </div>
+          )}
+          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {currentVacations.map(renderVacationCard)}
           </div>
           <div className="mt-8 flex justify-center">
             <Pagination
               current={currentPage}
-              total={vacations.length}
+              total={filteredAndSortedVacations.length}
               pageSize={itemsPerPage}
               onChange={handlePageChange}
               showSizeChanger={false}
