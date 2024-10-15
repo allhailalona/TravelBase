@@ -28,7 +28,7 @@ export async function getRedisState(key: string): Promise<string | null> {
 
 export async function setRedisState(key: string, value: TokenPayload, days: number): Promise<void> {
   try {
-    const expirationInSeconds = days
+    const expirationInSeconds = days * 24 * 60 * 60
     await client.set(key, JSON.stringify(value), { EX: expirationInSeconds });
     console.log(`Successfully set value in Redis with ${days}-day expiration`);
     console.log('value is', await getRedisState(key));

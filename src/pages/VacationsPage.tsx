@@ -1,12 +1,18 @@
 import { useEffect, useState } from 'react'
-import { message } from 'antd'
+import { message, Pagination } from 'antd'
 import { useNavigate } from 'react-router-dom'
 import { useGeneralContext } from '../context/GeneralContext'
-import { UserRole }  from '../../types'
+import AdminCard from '../comps/AdminCard'
+import UserCard from '../comps/UserCard'
+import { UserRole, Vacation }  from '../../types'
 
 export default function VacationsPage(): JSX.Element {
-  const { setVacations } = useGeneralContext()
+  const { setVacations, vacations } = useGeneralContext()
   const [role, setRole] = useState<UserRole>(undefined)
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10; // Number of vacations per page
 
   const navigate = useNavigate()
 
@@ -82,9 +88,48 @@ export default function VacationsPage(): JSX.Element {
 
     helperFunc()
   }, [])
+
+  // Pagination calculations
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  // Slice the vacations array to get only the items for the current page
+  const currentVacations = vacations?.slice(indexOfFirstItem, indexOfLastItem);
+
+  // Handle page change in pagination
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // Render appropriate card based on user role
+  const renderVacationCard = (vacation: Vacation) => {
+    if (role === 'admin') {
+      return <AdminCard key={vacation.vacation_id} vacation={vacation} />;
+    } else {
+      return <UserCard key={vacation.vacation_id} vacation={vacation} />;
+    }
+  };
+
   return (
-    <div>
-      user is {role}
+    <div className="container mx-auto px-4">
+      <p className="text-lg font-bold my-4">User is {role}</p>
+      {vacations && vacations.length > 0 ? (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {currentVacations.map(renderVacationCard)}
+          </div>
+          <div className="mt-8 flex justify-center">
+            <Pagination
+              current={currentPage}
+              total={vacations.length}
+              pageSize={itemsPerPage}
+              onChange={handlePageChange}
+              showSizeChanger={false}
+            />
+          </div>
+        </>
+      ) : (
+        <p>No vacations available or loading...</p>
+      )}
     </div>
-  )
-}
+  );
+} 

@@ -14,7 +14,7 @@ export const genTokens = async (userId: string, userRole: UserRole): Promise<Tok
   const accessToken = jwt.sign(
     { userId, userRole },
     process.env.JWT_SECRET,
-    { expiresIn: '5s' } // Don't forget to change it back!
+    { expiresIn: '3m' } 
   );
   const refreshToken = jwt.sign(
     { userId, userRole },
@@ -23,7 +23,7 @@ export const genTokens = async (userId: string, userRole: UserRole): Promise<Tok
   );
   
   // Save refresh token in Redis for 3 days
-  await setRedisState(refreshToken, {userId, userRole}, 10) 
+  await setRedisState(refreshToken, {userId, userRole}, 3) 
 
   return { accessToken, refreshToken }
 }
