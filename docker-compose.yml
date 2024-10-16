@@ -8,6 +8,7 @@ services:
     volumes:
       - ./mysql-data:/var/lib/mysql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - pictures:/app/pictures  # Named volume for images
     ports:
       - "3306:3306"
     command: >
@@ -15,3 +16,19 @@ services:
         lsof -i tcp:3306 | grep LISTEN | awk '{print $$2}' | xargs -r kill -9;
         docker-entrypoint.sh mysqld
       "
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/dockerfile
+    volumes:
+      - ./backend:/app
+      - pictures:/app/pictures
+    depends_on:
+      - db
+    ports:
+      - "3000:3000"
+
+volumes:
+  pictures:
+

@@ -1,79 +1,140 @@
 import { useState, useEffect } from 'react'
-import { Form, Input, DatePicker, InputNumber, message } from 'antd';
+import { Form, Input, InputNumber, message } from 'antd';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
-import { useAuthAndData } from '../hooks/useAuthAndData';
-import { Vacation } from '../../types';
-import moment from 'moment';
+import { authAndData } from '../hooks n custom funcs/authAndData';
+import { Vacation, Role } from '../../types';
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";
 
-const { RangePicker } = DatePicker;
 const { TextArea } = Input;
 
 export default function AddVacationForm() {
+  // Hooks for navigation and routing
   const navigate = useNavigate();
   const location = useLocation()
   const { id } = useParams()
 
+  // Form and state management
   const [form] = Form.useForm();
+  const [tempVacations, setTempVacations] = useState()
+  const [role, setRole] = useState<Role>('')
   const [image, setImage] = useState<string>('')
   const [originalImage, setOriginalImage] = useState<string>('');
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
 
+  // Determine if we're in edit mode
   let mode = location.pathname.includes('/vacations/edit') && id ? 'single' : 'none';
 
-  const { role, singleVacation } = useAuthAndData(mode, id);
+  // Custom hook to fetch auth status and vacation data
+    // Fetch vacation data and user role
+    useEffect(() => {
+      const fetchData = async () => {
+        const data = await authAndData(mode, id);
+        setTempVacations(data.vacations)
+        setRole(data.role)
+        console.log('single vacation is', data.vacations)
+        console.log('example is', data.vacations.starting_date)
+        // Use the data...
+      };
+      fetchData();
+    }, []);
 
+    useEffect(() => {
+      console.log('temp vacations have changesd', tempVacations)
+    }, [tempVacations])
+
+  // Effect to populate form when editing an existing vacation
   useEffect(() => {
-    if (singleVacation && singleVacation[0]) {
-      const vacationImage = singleVacation[0].image_url || '';
+    if (tempVacations) {
+      console.log('about to fill form')
+      const vacationImage = tempVacations.image_url || '';
       setImage(vacationImage);
       setOriginalImage(vacationImage);
-
-      
+      setStartDate(tempVacations.starting_date ? new Date(tempVacations.starting_date) : undefined);
+      setEndDate(tempVacations.ending_date ? new Date(tempVacations.ending_date) : undefined);
       form.setFieldsValue({
-        destination: singleVacation[0].destination,
-        description: singleVacation[0].description,
-        dateRange: [moment(singleVacation[0].starting_date), moment(singleVacation[0].ending_date)],
-        price: parseFloat(singleVacation[0].price),
+        destination: tempVacations.destination,
+        description: tempVacations.description,
+        price: parseFloat(tempVacations.price),
         imageUrl: vacationImage,
       });
     }
-  }, [singleVacation, form]);
+  }, [tempVacations, form]);
 
+  // Form submission handler
   const onFinish = async (values: any) => {
-    const vacation: Omit<Vacation, 'vacation_id'> = {
+    if (!startDate || !endDate) {
+      message.error('Please select both start and end dates');
+      return;
+    }
+    const vacation: Vacation = {
+      vacation_id: id,
       destination: values.destination,
       description: values.description,
-      starting_date: values.dateRange[0],
-      ending_date: values.dateRange[1],
+      starting_date: startDate.toISOString().split('T')[0],
+      ending_date: endDate.toISOString().split('T')[0],
       price: values.price.toString(),
       image_url: values.imageUrl
     };
+    // Check if values ave been changed at all!
 
-    const url = id ? `http://localhost:3000/edit-vacation/${id}` : 'http://localhost:3000/add-vacation';
-    const method = id ? 'PUT' : 'POST';
-
-    const res = await fetch(url, {
-      method: method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(vacation)
-    });
-
-    if (!res.ok) {
-      const errorData = await res.json()
-      message.error(`Error ${id ? 'editing' : 'adding'} vacation: ${errorData}`)
-      throw new Error(`Error in vacation form request: ${errorData}`)
-    } 
-    
-    message.success(`Successfully ${id ? 'edited' : 'added'} vacation!`)
-    navigate('/vacations')
-  };
-
-  const disabledDate = (current: moment.Moment) => {
-    if (singleVacation) {
-      return false;
+    // Determine API endpoint based on add/edit mode
+    // FOR SOME REASON I CANNOT INCLUDE A CONDITIONALLY ASSIGNED VARIALBE LIKE 'ENDPOINT' IN THE FETCH REQUEST DIRECTLY, INSTEAD OF THE MANUAL ADDRESS, SAVING PRECIOUS CODING SPACE.
+    const { role } = await authAndData('none')
+    if (role === 'admin') {
+      if (id) {
+        const res = await fetch(`http://localhost:3000/vacations/edit`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(vacation)
+        });
+  
+        if (!res.ok) {
+          const errorData = await res.json()
+          message.error(`Error editing vacation: ${errorData}`)
+          throw new Error(`Error in vacation form request: ${errorData}`)
+        } 
+  
+        message.success(`Successfully edited vacation!`)
+        navigate('/vacations/fetch')
+      } else {
+        const res = await fetch(`http://localhost:3000/vacations/add`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(vacation)
+        });
+  
+        if (!res.ok) {
+          const errorData = await res.json()
+          message.error(`Error adding vacation: ${errorData}`)
+          throw new Error(`Error in vacation form request: ${errorData}`)
+        } 
+  
+        message.success(`Successfully added vacation!`)
+        navigate('/vacations/fetch')
+      }
     }
-    return current && current < moment().startOf('day');
   };
 
+  const validateDateRange = (_, value) => {
+    if (!startDate || !endDate) {
+      return Promise.reject('Please select both start and end dates');
+    }
+    if (!tempVacations && startDate < new Date()) {
+      return Promise.reject('Start date cannot be in the past');
+    }
+    if (!tempVacations && endDate < new Date()) {
+      return Promise.reject('End date cannot be in the past');
+    }
+    if (endDate < startDate) {
+      return Promise.reject('End date must be after start date');
+    }
+    return Promise.resolve();
+  };
+
+
+  // Only allow admin access
   if (role !== 'admin') return null; 
 
   return (
@@ -82,17 +143,37 @@ export default function AddVacationForm() {
       <Form form={form} onFinish={onFinish} layout="vertical">
         <div className="grid grid-cols-2 gap-4">
           <div>
+            {/* Vacation details form fields */}
             <Form.Item name="destination" label="Destination" rules={[{ required: true, message: 'Required' }]}>
               <Input />
             </Form.Item>
-            <Form.Item name="dateRange" label="Date Range" rules={[{ required: true, message: 'Required' }]}>
-              <RangePicker 
-                className="w-full" 
-                disabledDate={disabledDate}
-                format="YYYY-MM-DD"
-              />
+            <Form.Item name="dateRange" label="Date Range" rules={[{ validator: validateDateRange }]}>
+              <div className="flex space-x-4">
+                <DatePicker
+                  selected={startDate || null}
+                  onChange={(date) => setStartDate(date || undefined)}
+                  selectsStart
+                  startDate={startDate}
+                  endDate={endDate}
+                  className="form-input block w-full sm:text-sm sm:leading-5"
+                  placeholderText="Start Date"
+                />
+                <DatePicker
+                  selected={endDate}
+                  onChange={(date) => setEndDate(date || undefined)}
+                  selectsEnd
+                  startDate={startDate}
+                  endDate={endDate}
+                  minDate={startDate}
+                  className="form-input block w-full sm:text-sm sm:leading-5"
+                  placeholderText="End Date"
+                />
+              </div>
             </Form.Item>
-            <Form.Item name="price" label="Price" rules={[{ required: true, type: 'number', min: 0.01 }]}>
+            <Form.Item name="price" label="Price" rules={[
+              { required: true, type: 'number', min: 0.01, message: 'Price must be greater than 0' },
+              { type: 'number', max: 10000, message: 'Price cannot exceed $10,000' }
+            ]}>
               <InputNumber
                 className="w-full"
                 formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
@@ -103,7 +184,11 @@ export default function AddVacationForm() {
             <Form.Item name="description" label="Description" rules={[{ required: true, message: 'Required' }]}>
               <TextArea rows={4} />
             </Form.Item>
-            <Form.Item name="imageUrl" label="Image URL" rules={[{ required: true, message: 'Required' }]}>
+            <Form.Item 
+              name="imageUrl" 
+              label="Image URL" 
+              rules={[{ required: !id, message: 'Required' }]}
+            >
               <Input 
                 onChange={(e) => {
                   const newValue = e.target.value;
@@ -114,6 +199,7 @@ export default function AddVacationForm() {
             </Form.Item>
           </div>
           <div>
+            {/* Image preview */}
             <img src={image} alt="Current vacation" className="mt-2 max-w-full h-auto" />
           </div>
         </div>

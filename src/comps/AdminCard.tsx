@@ -1,32 +1,38 @@
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom'
+import { authAndData } from '../hooks n custom funcs/authAndData'
 import { Vacation } from '../../types';
-import { message } from 'antd'
+import { message, Popconfirm } from 'antd'
+import { QuestionCircleOutlined } from '@ant-design/icons';
 import { FaCalendarAlt, FaDollarSign, FaImage, FaPencilAlt, FaTrashAlt } from 'react-icons/fa';
 
 export default function AdminCards({ vacation }: { vacation: Vacation }) {
   const navigate = useNavigate()
-
-  const deleteCard = async () => {
-    console.log('about to delete', vacation.vacation_id)
-    const res = await fetch('http://localhost:3000/vacations/delete', {
-      method: 'POST', 
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ id: vacation.vacation_id })
-    })
-
-    if (!res.ok) {
-      const errorData = res.json()
-      message.error(`Error while deleting vacation: ${errorData}`)
-      throw new Error (
-        `Error while delete vacation: ${errorData}`
-      )
+  
+  const deleteCard = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Add this line
+    const { role } = await authAndData('none')
+    if (role === 'admin') {
+      console.log('fuck')
+      const res = await fetch('http://localhost:3000/vacations/delete', {
+        method: 'POST', 
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id: vacation.vacation_id })
+      })
+  
+      if (!res.ok) {
+        const errorData = res.json()
+        message.error(`Error while deleting vacation: ${errorData}`)
+        throw new Error (
+          `Error while delete vacation: ${errorData}`
+        )
+      }
+  
+      message.success('Successfully deleted vacation! Refreshing page...')
+      window.location.reload(true)
     }
-
-    message.success('Successfully deleted vacation! Refreshing page...')
-    window.location.reload(true)
   }
 
   const editCard = () => {
@@ -47,9 +53,19 @@ export default function AdminCards({ vacation }: { vacation: Vacation }) {
         <button className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition-colors duration-300">
           <FaPencilAlt className="text-lg" />
         </button>
-        <button onClick={deleteCard} className="bg-red-500 text-white p-2 rounded hover:bg-red-600 transition-colors duration-300">
-          <FaTrashAlt className="text-lg" />
-        </button>
+        <Popconfirm
+          title="Are you sure you want to delete this vacation?"
+          onConfirm={deleteCard}
+          okText="Yes"
+          cancelText="No"
+          icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
+        >
+          <button 
+            onClick={(e) => e.stopPropagation()}
+            className="bg-red-500 text-white p-2 rounded hover:bg-red-600 transition-colors duration-300">
+            <FaTrashAlt className="text-lg" />
+          </button>
+        </Popconfirm>
       </div>
       </div>
       <div className="p-4">

@@ -13,8 +13,8 @@ export type Vacation = {
   vacation_id: number
   destination: string
   description: string
-  starting_date: Date
-  ending_date: Date
+  starting_date: string
+  ending_date: string
   price: string // To keep the fraction
   image_url: string
 }
@@ -46,3 +46,8 @@ export type FilterControlsProps = {
   setShowNotBegun: (value: boolean) => void;
   setShowActive: (value: boolean) => void;
 }
+
+export type AuthAndDataResult = {
+  role: UserRole | undefined;
+  singleVacation: Vacation[] | null;
+};

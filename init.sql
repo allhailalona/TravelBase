@@ -17,7 +17,7 @@ CREATE TABLE vacations (
   starting_date DATE,
   ending_date DATE,
   price DECIMAL(10, 2),
-  image_url VARCHAR(255)
+  image_url TEXT
 );
 
 CREATE TABLE followers (

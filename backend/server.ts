@@ -4,7 +4,7 @@ import dotenv from 'dotenv'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { register, login } from './userAuth'
-import { fetchVacations, fetchSingleVacation, addVacation, deleteVacation } from './MySQLUtils'
+import { fetchVacations, fetchSingleVacation, addVacation, deleteVacation, editVacation } from './MySQLUtils'
 import { genTokens, authToken } from './JWTTokensUtils'
 import { getRedisState, setRedisState } from './redisUtils'
 
@@ -82,11 +82,12 @@ app.get('/vacations/fetch', authToken, async (req: Request, res: Response) => {
 app.post('/vacations/add', async (req: Request, res: Response) => {
   try {
     const values = req.body
+    console.log('trying to add', values.image_url)
     await addVacation(values)
 
     res.status(200).json('Success!')
   } catch (err) {
-    res.json(err.status || 500).json({ error: err.message || 'Internal Server Error'})
+    res.status(err.status || 500).json({ error: err.message || 'Internal Server Error'})
   }
 })
 
@@ -96,6 +97,19 @@ app.post('/vacations/delete', async (req: Request, res: Response) => {
     await deleteVacation(id)
 
     res.status(200).json('Success!')
+  } catch (err) {
+    res.status(err.status || 500).json({ error: err.message || 'Internal Server Error'})
+  }
+})
+
+app.put('/vacations/edit', async (req: Request, res: Response) => {
+  try {
+    console.log('about to edit', req.body.vacation_id)
+    const vacation = req.body
+    console.log('vacation is', vacation)
+    await editVacation(vacation)
+
+    res.status(200).json('Edit Successful!')
   } catch (err) {
     res.status(err.status || 500).json({ error: err.message || 'Internal Server Error'})
   }

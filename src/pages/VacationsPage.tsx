@@ -1,22 +1,31 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Pagination } from 'antd'
 import { useNavigate } from 'react-router-dom'
 import { useGeneralContext } from '../context/GeneralContext'
-import { useAuthAndData } from '../hooks/useAuthAndData';
-import { useVacationFilters } from '../hooks/useVacationFilters'
+import { authAndData } from '../hooks n custom funcs/authAndData';
+import { useVacationFilters } from '../hooks n custom funcs/useVacationFilters'
 import FilterControls from '../comps/FilterControls'
 import AdminCard from '../comps/AdminCard'
 import UserCard from '../comps/UserCard'
-import { Vacation } from '../../types'
+import { Vacation, Role } from '../../types'
 
 export default function VacationsPage(): JSX.Element {
   const navigate = useNavigate()
+  const { setVacations, vacations } = useGeneralContext()
+  const [role, setRole] = useState<Role>()
 
   // Fetch vacation data and user role
-  const { role } = useAuthAndData('all');
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await authAndData('all');
+      setVacations(data.vacations)
+      setRole(data.role)
+      console.log('vacationsPage are', vacations)
+      // Use the data...
+    };
+    fetchData();
+  }, []);
 
-  // Access vacations from the general context
-  const { vacations } = useGeneralContext()
 
   // Apply filters and sorting to vacations
   const {
@@ -55,25 +64,24 @@ export default function VacationsPage(): JSX.Element {
     <div className="container mx-auto px-4">
       {/* Display user role */}
       <p className="text-lg font-bold my-4">User is {role}</p>
+      {/* Render filter controls for user role */}
+      {role === 'user' && (
+        <FilterControls
+          sortOrder={sortOrder}
+          showNotBegun={showNotBegun}
+          showActive={showActive}
+          toggleSortOrder={toggleSortOrder}
+          setShowNotBegun={setShowNotBegun}
+          setShowActive={setShowActive}
+        />
+      )}
+
+      {/* Render Add button for admin role */}
+      {role === 'admin' && (
+        <button onClick={() => navigate('/vacations/add')}>Add A Vacation</button>
+      )}
       {vacations && vacations.length > 0 ? (
-        <>
-          {/* Render filter controls for user role */}
-          {role === 'user' && (
-            <FilterControls
-              sortOrder={sortOrder}
-              showNotBegun={showNotBegun}
-              showActive={showActive}
-              toggleSortOrder={toggleSortOrder}
-              setShowNotBegun={setShowNotBegun}
-              setShowActive={setShowActive}
-            />
-          )}
-          
-          {/* Render Add button for admin role */}
-          {role === 'admin' && (
-            <button onClick={() => navigate('/vacations/add')}>Add A Vacation</button>
-          )}
-          
+        <>          
           {/* Grid layout for vacation cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {currentVacations.map(renderVacationCard)}
@@ -91,7 +99,6 @@ export default function VacationsPage(): JSX.Element {
           </div>
         </>
       ) : (
-        // Display when no vacations are available or still loading
         <p>No vacations available or loading...</p>
       )}
     </div>
