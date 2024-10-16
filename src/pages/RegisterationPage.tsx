@@ -40,7 +40,7 @@ export default function RegisterationPage(): JSX.Element {
 
     // Done!
     message.success('Registeration Successful')
-    navigate('/vacations')
+    navigate('/vacations/fetch')
   }
   
   return (

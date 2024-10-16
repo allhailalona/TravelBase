@@ -1,8 +1,38 @@
 import { format } from 'date-fns';
+import { useNavigate } from 'react-router-dom'
 import { Vacation } from '../../types';
+import { message } from 'antd'
 import { FaCalendarAlt, FaDollarSign, FaImage, FaPencilAlt, FaTrashAlt } from 'react-icons/fa';
 
 export default function AdminCards({ vacation }: { vacation: Vacation }) {
+  const navigate = useNavigate()
+
+  const deleteCard = async () => {
+    console.log('about to delete', vacation.vacation_id)
+    const res = await fetch('http://localhost:3000/vacations/delete', {
+      method: 'POST', 
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ id: vacation.vacation_id })
+    })
+
+    if (!res.ok) {
+      const errorData = res.json()
+      message.error(`Error while deleting vacation: ${errorData}`)
+      throw new Error (
+        `Error while delete vacation: ${errorData}`
+      )
+    }
+
+    message.success('Successfully deleted vacation! Refreshing page...')
+    window.location.reload(true)
+  }
+
+  const editCard = () => {
+    navigate(`/vacations/edit/${vacation.vacation_id}`);
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
       <div className="relative">
@@ -13,11 +43,11 @@ export default function AdminCards({ vacation }: { vacation: Vacation }) {
             <FaImage className="text-gray-400 text-5xl" />
           </div>
         )}
-      <div className="absolute top-2 right-2 space-x-2">
+      <div onClick={editCard} className="absolute top-2 right-2 space-x-2">
         <button className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition-colors duration-300">
           <FaPencilAlt className="text-lg" />
         </button>
-        <button className="bg-red-500 text-white p-2 rounded hover:bg-red-600 transition-colors duration-300">
+        <button onClick={deleteCard} className="bg-red-500 text-white p-2 rounded hover:bg-red-600 transition-colors duration-300">
           <FaTrashAlt className="text-lg" />
         </button>
       </div>

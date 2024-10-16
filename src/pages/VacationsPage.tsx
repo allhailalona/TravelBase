@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Pagination } from 'antd'
+import { useNavigate } from 'react-router-dom'
 import { useGeneralContext } from '../context/GeneralContext'
-import { useVacationData } from '../hooks/useVacation'
+import { useAuthAndData } from '../hooks/useAuthAndData';
 import { useVacationFilters } from '../hooks/useVacationFilters'
 import FilterControls from '../comps/FilterControls'
 import AdminCard from '../comps/AdminCard'
@@ -9,8 +10,10 @@ import UserCard from '../comps/UserCard'
 import { Vacation } from '../../types'
 
 export default function VacationsPage(): JSX.Element {
+  const navigate = useNavigate()
+
   // Fetch vacation data and user role
-  const { role } = useVacationData()
+  const { role } = useAuthAndData('all');
 
   // Access vacations from the general context
   const { vacations } = useGeneralContext()
@@ -64,6 +67,11 @@ export default function VacationsPage(): JSX.Element {
               setShowNotBegun={setShowNotBegun}
               setShowActive={setShowActive}
             />
+          )}
+          
+          {/* Render Add button for admin role */}
+          {role === 'admin' && (
+            <button onClick={() => navigate('/vacations/add')}>Add A Vacation</button>
           )}
           
           {/* Grid layout for vacation cards */}

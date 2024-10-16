@@ -1,16 +1,2 @@
-- improve error handling in express (merge conditional)
-- greatly improve JWT Tokens functionality from prev commit:
-  on successful login/register:
-    a. gen access and refresh token 
-    b. save refresh token to redis with no expiration
-    c. save access and refresh token in front localstorage instead of cookies - see 'help-me-out!' branch
-    d. when a reqeust fails due to an expired access token, we do the following:
-      1. return 'token expired' to front
-      2. make a /refresh-access-token request and include the localStorage refresh token
-        - verify refresh token against the one in Redis
-        - Delete previous refresh token
-        - gen a new access and refresh token
-        - Return both tokens to server.ts
-      3. if instruction 2 went well, store new access and refresh token in front localStorage
-      4. repeat original request with the new access token
-- create react context to store vacations and user in a centralized manner
+- mod useAuthAndData to allow fetching a single vacation to display on edit mode- implement three options logic
+- rename addresses

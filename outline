@@ -57,7 +57,7 @@ users interface:
     e. number of followers
     f. is the user following vacation
   - 10 cards per page with pagination
-  - the user can follow/unfollow vacations
+  - the user can follow/unfollow vacations and see how many followers are there
   - sort cards by asc. vacation starting date
   - filter checkboxes:
     a. only vacations the user is following
@@ -79,16 +79,16 @@ admin interface:
     e. delete
     f. edit
   - 10 cards per page with pagination
-  - admin CANNOT follow/unfollow vacations
+  - admin CANNOT follow/unfollow vacations neither see followers on cards
   - add a vacation button on top page redirect onClick to add-vacation page and show:
     a. destination
     b. description
     c. starting date
     d. ending date
     e. price
-    f. cover image (nice interactive add image comp)
+    f. cover image (nice interactive add image via file upload or url)
     g. add vacation button
-    e. cancel and redirect back to vacations page
+    e. cancel and redirect back to /vacations page
     validation:
     a. all fields required
     b. only accessible to admin, redirect users trying to get here by address to login page
@@ -98,10 +98,9 @@ admin interface:
     f. images are to be saved as urls in database... the official request is to save them in a seperate table
       alongside the url but this is arduously unnecessary NOTE
   - edit vacation button on each vacation card - redirect (place those instead of the following button):
-    contains the same fields as the add a vacation card
-    a. only accessible to admin, redirect users trying to get here by address to login page
-    b. the official instructions are to require all fields, I think it would be better to show the existing values in the 
-      form, allowing the admin to change only what he wishes NOTE
+    a. contains the same fields as the add a vacation card
+    b. only accessible to admin, redirect users trying to get here by address to login page
+    c. all fields required BUT the image
     c. prices between  1-10k dollars
     d this time u can choose past events to 'renew' a past vacation
     e. u can't however pick an ending date earlier than starting date
@@ -130,3 +129,27 @@ bonus:
 Explain the JOIN thing, I think it's a good example of what u discussed with Gal previously
 Docker should have a specified port... perhaps notify Gal about it... Since he might have other ports active while attempting to connect
 we can't try to connect to each port like with the docker.compose.yml, which we should change as well
+
+left:
+edit vacations
+are u sure pop up for deletes
+
+show followers
+third filter for followers
+export csv
+
+styling!
+
+then finally finally
+GO OVER EVERYTHING MAKE SURE IT'S ALL THERE!
+unit testing
+cloud?
+docker
+
+- edit vacation button on each vacation card - redirect (place those instead of the following button):
+    a. contains the same fields as the add a vacation card
+    b. only accessible to admin, redirect users trying to get here by address to login page
+    c. all fields required BUT the image
+    c. prices between  1-10k dollars
+    d. can't pick a starting date after the ending date
+    e. CAN pick past dates - yes I know very odd!

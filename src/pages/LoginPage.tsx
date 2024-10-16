@@ -31,7 +31,7 @@ export default function LoginPage(): JSX.Element {
 
     // Done!
     message.success('Login Successful')
-    navigate('/vacations')
+    navigate('/vacations/fetch')
   }
   
   return (
