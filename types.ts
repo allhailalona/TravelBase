@@ -37,3 +37,12 @@ export type TokenPayload = {
   userId: string
   userRole: UserRole
 }
+
+export type FilterControlsProps = {
+  sortOrder: 'asc' | 'desc';
+  showNotBegun: boolean;
+  showActive: boolean;
+  toggleSortOrder: () => void;
+  setShowNotBegun: (value: boolean) => void;
+  setShowActive: (value: boolean) => void;
+}

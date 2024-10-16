@@ -63,7 +63,6 @@ users interface:
     a. only vacations the user is following
     b. only vacations that havent' begun yet
     c. only currently active vacations - those that have begun but not ended
-  - sort asc. and desc. by the vacation's starting date
   - show user name and logoug with 'are u sure pop up' besides it
 
   each action is to be accompanied with a validation token, if there's something wrong then output it and redirect to login page
