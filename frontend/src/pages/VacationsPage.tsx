@@ -29,12 +29,10 @@ export default function VacationsPage(): JSX.Element {
   const {
     filteredAndSortedVacations,
     sortOrder,
-    showNotBegun,
-    showActive,
-    setShowNotBegun,
-    setShowActive,
+    filterType,
+    setFilterType,
     toggleSortOrder
-  } = useVacationFilters(vacations, role)
+  } = useVacationFilters(vacations, role);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -66,11 +64,9 @@ export default function VacationsPage(): JSX.Element {
       {role === 'user' && (
         <FilterControls
           sortOrder={sortOrder}
-          showNotBegun={showNotBegun}
-          showActive={showActive}
+          filterType={filterType}
           toggleSortOrder={toggleSortOrder}
-          setShowNotBegun={setShowNotBegun}
-          setShowActive={setShowActive}
+          setFilterType={setFilterType}
         />
       )}
 

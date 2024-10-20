@@ -1,17 +1,14 @@
-import { Checkbox } from 'antd';
+import { Radio } from 'antd';
 import { FilterControlsProps } from '../../types';
 
 export default function FilterControls({
   sortOrder,
-  showNotBegun,
-  showActive,
+  filterType,
   toggleSortOrder,
-  setShowNotBegun,
-  setShowActive
+  setFilterType
 }: FilterControlsProps): JSX.Element {
   return (
     <div className="mb-4">
-      {/* Sort order toggle button */}
       <button 
         onClick={toggleSortOrder}
         className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 mr-4"
@@ -19,21 +16,14 @@ export default function FilterControls({
         Sort by Date {sortOrder === 'asc' ? '↑' : '↓'}
       </button>
 
-      {/* Checkbox for filtering vacations that have not begun */}
-      <Checkbox 
-        checked={showNotBegun}
-        onChange={e => setShowNotBegun(e.target.checked)}
+      <Radio.Group 
+        value={filterType} 
+        onChange={e => setFilterType(e.target.value)}
       >
-        Show only vacations that have not begun
-      </Checkbox>
-
-      {/* Checkbox for filtering currently active vacations */}
-      <Checkbox 
-        checked={showActive}
-        onChange={e => setShowActive(e.target.checked)}
-      >
-        Show only currently active vacations
-      </Checkbox>
+        <Radio.Button value="all">All Vacations</Radio.Button>
+        <Radio.Button value="notBegun">Not Begun</Radio.Button>
+        <Radio.Button value="active">Currently Active</Radio.Button>
+      </Radio.Group>
     </div>
   );
 }
