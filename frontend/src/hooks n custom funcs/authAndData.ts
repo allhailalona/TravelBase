@@ -42,11 +42,13 @@ export const authAndData = async (mode: 'none' | 'single' | 'all', id?: number) 
     if (res.status === 401) {
       // Handle expired access token
       message.loading('Your access token has expired. Please wait while the system generates a new one...');
+      console.log('access token expired generating a refresh token')
       await refreshTokens();
       return authAndData(mode, id); // Retry after refreshing tokens
     } else {
       // Handle other errors
       message.error('Something Went Wrong, Please Login Again!');
+      console.log('token was invalid or unknown error, redirecting to login page')
       window.location.href = '/login';
       throw new Error(`Error in fetching data: ${errorData || 'unknown error'}`);
     }
@@ -56,8 +58,8 @@ export const authAndData = async (mode: 'none' | 'single' | 'all', id?: number) 
   const data = await res.json();
 
   // Update vacations based on the mode
-  if (mode === 'all') vacations = data.vacations;
-  if (mode === 'single') vacations = data.vacations[0];
+  if (mode === 'all') vacations = data.updatedVacations;
+  if (mode === 'single') vacations = data.updatedVacations[0]; // Enables me to use vacations directly in the editing form
   
   // Set the user role
   role = data.role;
@@ -84,10 +86,13 @@ const refreshTokens = async () => {
     localStorage.clear();
     message.destroy();
     if (res.status === 401) {
+      console.log('the refresh token is expired as well')
       message.error('The Session Has Expired! Please login.');
     } else {
+      console.log('an unknown error has occured while trying to use refresh token')
       message.error('An Unknown Error Has Occurred While Refreshing Tokens!');
     }
+    console.log('hello from refrehs token error res block redirecting to login')
     window.location.href = '/login';
     throw new Error(`Error in refresh-token request: ${errorData}`);
   }

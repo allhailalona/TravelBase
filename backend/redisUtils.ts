@@ -1,9 +1,9 @@
 import { createClient } from 'redis';
 import { TokenPayload } from '../types'
 
-// Create a Redis client and connect
+// Create a Redis client and connedsct
 const client = createClient({
-  url: process.env.REDIS_URL || 'redis://localhost:6379' // Adjust the URL as needed
+  url: process.env.REDIS_URL || 'redis://localhost:6379'
 });
 
 client.on('error', (err) => {

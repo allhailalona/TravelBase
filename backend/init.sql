@@ -1,3 +1,5 @@
+SELECT 'Hello from init.sql - Script started' AS ''; -- log
+
 CREATE DATABASE IF NOT EXISTS vacation_db;
 USE vacation_db;
 
@@ -17,7 +19,7 @@ CREATE TABLE vacations (
   starting_date DATE,
   ending_date DATE,
   price DECIMAL(10, 2),
-  image_url TEXT
+  image_path VARCHAR(255)
 );
 
 CREATE TABLE followers (
@@ -48,7 +50,7 @@ INSERT INTO users (first_name, last_name, email, password, role) VALUES
 -- Insert 12 vacations FOR NOW VACATIONS IS NOT BEING INSERTED....
 USE vacation_db;
 
-INSERT INTO vacations (destination, description, starting_date, ending_date, price, image_url) VALUES
+INSERT INTO vacations (destination, description, starting_date, ending_date, price, image_path) VALUES
 ('Paris', 'City of Love', '2024-06-01', '2024-06-07', 1200.00, 'https://example.com/paris.jpg'),
 ('Tokyo', 'Modern Metropolis', '2024-07-15', '2024-07-22', 1500.00, 'https://example.com/tokyo.jpg'),
 ('New York', 'Big Apple Adventure', '2024-08-10', '2024-08-17', 1300.00, 'https://example.com/newyork.jpg'),

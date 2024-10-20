@@ -41,10 +41,12 @@ export async function register(values: User) {
 
 export async function login(loginInfo: User) {
   try {
+    console.log('hello from login func')
     const [rows] = await pool.query(
       'SELECT * FROM users WHERE email = ? AND password = ?', 
       [loginInfo.email, loginInfo.password]
     )
+    console.log('after request')
 
     // Again, error handling is intentionally vague
     if (rows.length === 0) {
@@ -66,7 +68,7 @@ export async function login(loginInfo: User) {
       }
     }
   } catch (err) {
-    console.error('err in login func is userAuth.ts')
+    console.error('err in login func in userAuth.ts')
     throw err
   }
 }

@@ -6,8 +6,8 @@ export default function UserCards({ vacation }: { vacation: Vacation }) {
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
       <div className="relative">
-        {vacation.image_url ? (
-          <img src={vacation.image_url} alt={vacation.destination} className="w-full h-48 object-cover" />
+        {vacation.image_path ? (
+          <img src={vacation.image_path} alt={vacation.destination} className="w-full h-48 object-cover" />
         ) : (
           <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
             <FaImage className="text-gray-400 text-5xl" />

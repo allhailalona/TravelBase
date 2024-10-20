@@ -25,22 +25,45 @@ export async function fetchSingleVacation(id: number) {
 
 export async function addVacation(values: Omit<Vacation, 'vacation_id'>) {
   try {
-    // Decode base64 image
-    const base64Data = values.image_url.split(',')[1]; // Get base64 part
-    const imageBuffer = Buffer.from(base64Data, 'base64');
+    console.log('hello from add vacation')
 
-    // Define the path to store the image in the named volume
-    const imagePath = path.join('/app/pictures', `${Date.now()}.png`);
+    const volumePath = '/app/pictures'
     
-    // Write the image file to the specified path inside the container
-    await fs.writeFile(imagePath, imageBuffer);
+    // Extract the base64 data and image type
+    const matches = values.image_path.match(/^data:image\/([A-Za-z-+\/]+);base64,(.+)$/)
+    if (!matches || matches.length !== 3) {
+      throw new Error('Invalid image data')
+    }
 
-    // Update values to store the path instead of the base64 string
-    values.image_url = imagePath;
+    const imageType = matches[1]
+    const imageData = Buffer.from(matches[2], 'base64')
 
-    // 5. Execute the database query using the updated `image_url`
+    // Generate a unique filename with the correct extension
+    const timestamp = Date.now()
+    const filename = `${timestamp}.${imageType}`
+    const filePath = path.join(volumePath, filename)
+
+    // Save the image to the volume
+    await fs.writeFile(filePath, imageData)
+
+    // Verify the file was written by reading it back
+    try {
+      const readData = await fs.readFile(filePath)
+      if (readData.equals(imageData)) {
+        console.log('Image verification successful: File read matches original data')
+      } else {
+        console.log('Image verification failed: File read does not match original data')
+      }
+    } catch (readErr) {
+      console.error('Error reading back the saved image:', readErr)
+    }
+
+    // Update the image_path to be the path in the volume
+    const updatedImagePath = `/pictures/${filename}`
+
+    // Execute the database query using the updated `image_path`
     const query = `
-      INSERT INTO vacations (destination, description, starting_date, ending_date, price, image_url)
+      INSERT INTO vacations (destination, description, starting_date, ending_date, price, image_path)
       VALUES (?, ?, ?, ?, ?, ?)
     `;
 
@@ -50,10 +73,10 @@ export async function addVacation(values: Omit<Vacation, 'vacation_id'>) {
       values.starting_date,
       values.ending_date,
       values.price,
-      values.image_url
+      updatedImagePath  // Use the updated image Path here
     ]);
 
-    console.log('Vacation added successfully');
+    console.log('Vacation added successfully')
   } catch (err) {
     console.error('Error in addVacation:', err);
     throw err;
@@ -73,7 +96,40 @@ export async function deleteVacation(id: number) {
 
 export async function editVacation(vacation: Vacation) {
   try {
-    console.log('hello from update func vacation is', vacation)
+    const volumePath = '/app/pictures'
+
+    // Extract the base64 data and image type
+    const matches = vacation.image_path.match(/^data:image\/([A-Za-z-+\/]+);base64,(.+)$/)
+    if (!matches || matches.length !== 3) {
+      throw new Error('Invalid image data')
+    }
+
+    const imageType = matches[1]
+    const imageData = Buffer.from(matches[2], 'base64')
+
+    // Generate a unique filename with the correct extension
+    const timestamp = Date.now()
+    const filename = `${timestamp}.${imageType}`
+    const filePath = path.join(volumePath, filename)
+
+    // Save the image to the volume
+    await fs.writeFile(filePath, imageData)
+
+    // Verify the file was written by reading it back
+    try {
+      const readData = await fs.readFile(filePath)
+      if (readData.equals(imageData)) {
+        console.log('Image verification successful: File read matches original data')
+      } else {
+        console.log('Image verification failed: File read does not match original data')
+      }
+    } catch (readErr) {
+      console.error('Error reading back the saved image:', readErr)
+    }
+
+    // Update the image_path to be the path in the volume
+    const updatedImagePath = `/pictures/${filename}`
+
     const query = `
       UPDATE vacations 
       SET destination = ?, 
@@ -81,7 +137,7 @@ export async function editVacation(vacation: Vacation) {
           starting_date = ?, 
           ending_date = ?, 
           price = ?, 
-          image_url = ?
+          image_path = ?
       WHERE vacation_id = ?
     `;
     
@@ -91,7 +147,7 @@ export async function editVacation(vacation: Vacation) {
       vacation.starting_date,
       vacation.ending_date,
       vacation.price,
-      vacation.image_url,
+      updatedImagePath,
       vacation.vacation_id
     ]);
 

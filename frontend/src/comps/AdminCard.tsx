@@ -1,3 +1,4 @@
+import React from 'react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom'
 import { authAndData } from '../hooks n custom funcs/authAndData'
@@ -39,11 +40,17 @@ export default function AdminCards({ vacation }: { vacation: Vacation }) {
     navigate(`/vacations/edit/${vacation.vacation_id}`);
   };
 
+  // Convert Buffer to base64 string
+  const base64String = btoa(String.fromCharCode.apply(null, vacation.image_path.data));
+
+  // Create data URL
+  const dataUrl = `data:image/jpeg;base64,${base64String}`;
+
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
       <div className="relative">
-        {vacation.image_url ? (
-          <img src={vacation.image_url} alt={vacation.destination} className="w-full h-48 object-cover" />
+        {vacation.image_path ? (
+          <img src={dataUrl} alt={vacation.destination} className="w-full h-48 object-cover" />
         ) : (
           <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
             <FaImage className="text-gray-400 text-5xl" />

@@ -20,8 +20,6 @@ export default function VacationsPage(): JSX.Element {
       const data = await authAndData('all');
       setVacations(data.vacations)
       setRole(data.role)
-      console.log('vacationsPage are', vacations)
-      // Use the data...
     };
     fetchData();
   }, []);

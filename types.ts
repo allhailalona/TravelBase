@@ -16,7 +16,7 @@ export type Vacation = {
   starting_date: string
   ending_date: string
   price: string // To keep the fraction
-  image_url: string
+  image_path: string | Buffer
 }
 
 export type GeneralContext = {

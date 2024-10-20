@@ -33,6 +33,7 @@ export const authToken = (req: Request, res: Response, next: NextFunction) => {
   const accessToken = authHeader && authHeader.split(' ')[1];
 
   if (!accessToken) {
+    console.log('there is no access token at all')
     req.authError = { status: 401, message: 'Authorization accessToken is missing' };
     return next();
   }
@@ -40,13 +41,17 @@ export const authToken = (req: Request, res: Response, next: NextFunction) => {
   jwt.verify(accessToken, process.env.JWT_SECRET, (err, user) => {
     if (err) {
       if (err.name === 'TokenExpiredError') {
+        console.log('access token expired')
         req.authError = { status: 401, message: 'accessToken has expired', user: user || null };
       } else if (err.name === 'JsonWebTokenError') {
+        console.log('access token invalid')
         req.authError = { status: 403, message: 'Invalid accessToken' };
       } else {
+        console.log('unknown error with access token')
         req.authError = { status: 500, message: 'Failed to authenticate accessToken' };
       }
     } else {
+      console.log('access token is valid')
       req.user = user;
     }
     next();

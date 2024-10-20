@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Form, Input, InputNumber, message } from 'antd';
-import { useNavigate, useLocation, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { authAndData } from '../hooks n custom funcs/authAndData';
 import { Vacation, Role } from '../../types';
 import DatePicker from 'react-datepicker';
@@ -11,7 +11,6 @@ const { TextArea } = Input;
 export default function AddVacationForm() {
   // Hooks for navigation and routing
   const navigate = useNavigate();
-  const location = useLocation()
   const { id } = useParams()
 
   // Form and state management
@@ -22,42 +21,42 @@ export default function AddVacationForm() {
   const [originalImage, setOriginalImage] = useState<string>('');
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-
-  // Determine if we're in edit mode
-  let mode = location.pathname.includes('/vacations/edit') && id ? 'single' : 'none';
-
-  // Custom hook to fetch auth status and vacation data
-    // Fetch vacation data and user role
-    useEffect(() => {
-      const fetchData = async () => {
-        const data = await authAndData(mode, id);
+  
+  // Fetch vacation data and/ or user role
+  useEffect(() => {
+    const helperFunc = async () => {
+      if (id) { // If we are in edit mode
+        const data = await authAndData('single', id);
         setTempVacations(data.vacations)
         setRole(data.role)
-        console.log('single vacation is', data.vacations)
-        console.log('example is', data.vacations.starting_date)
-        // Use the data...
-      };
-      fetchData();
-    }, []);
+      } else { // If we are in adding mode
+        const data = await authAndData('none');
+        setRole(data.role)
+      }
+    };
+      
+    helperFunc()
+  }, []);
 
-    useEffect(() => {
-      console.log('temp vacations have changesd', tempVacations)
-    }, [tempVacations])
-
-  // Effect to populate form when editing an existing vacation
+  // Effect to populate form in edit mode
   useEffect(() => {
-    if (tempVacations) {
-      console.log('about to fill form')
-      const vacationImage = tempVacations.image_url || '';
-      setImage(vacationImage);
-      setOriginalImage(vacationImage);
+    if (id) {
+      console.log('its edit mode so form is filled')
+      // Convert Buffer to base64 string
+      const base64String = btoa(String.fromCharCode.apply(null, tempVacations.image_path.data));
+
+      // Create data URL
+      const dataUrl = `data:image/jpeg;base64,${base64String}`;
+
+      setImage(dataUrl);
+      setOriginalImage(dataUrl);
       setStartDate(tempVacations.starting_date ? new Date(tempVacations.starting_date) : undefined);
       setEndDate(tempVacations.ending_date ? new Date(tempVacations.ending_date) : undefined);
       form.setFieldsValue({
         destination: tempVacations.destination,
         description: tempVacations.description,
         price: parseFloat(tempVacations.price),
-        imageUrl: vacationImage,
+        imagePath: dataUrl === 'data:image/jpeg;base64,' ? '' : dataUrl, // This requres further attention since an empty image should be ---
       });
     }
   }, [tempVacations, form]);
@@ -75,7 +74,7 @@ export default function AddVacationForm() {
       starting_date: startDate.toISOString().split('T')[0],
       ending_date: endDate.toISOString().split('T')[0],
       price: values.price.toString(),
-      image_url: values.imageUrl
+      image_path: values.imagePath
     };
     // Check if values ave been changed at all!
 
@@ -133,7 +132,6 @@ export default function AddVacationForm() {
     return Promise.resolve();
   };
 
-
   // Only allow admin access
   if (role !== 'admin') return null; 
 
@@ -185,8 +183,8 @@ export default function AddVacationForm() {
               <TextArea rows={4} />
             </Form.Item>
             <Form.Item 
-              name="imageUrl" 
-              label="Image URL" 
+              name="imagePath" 
+              label="image Path" 
               rules={[{ required: !id, message: 'Required' }]}
             >
               <Input 

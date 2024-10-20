@@ -5,8 +5,10 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import { register, login } from './userAuth'
 import { fetchVacations, fetchSingleVacation, addVacation, deleteVacation, editVacation } from './MySQLUtils'
+import { handleFetchImageData } from './dockerUtils'
 import { genTokens, authToken } from './JWTTokensUtils'
 import { getRedisState, setRedisState } from './redisUtils'
+import { Vacation } from '../types'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -37,6 +39,7 @@ app.post('/register', async (req: Request, res: Response) => {
 
 app.get('/login', async (req: Request, res: Response) => {
   try {
+    console.log('hello from login')
     const loginInfo = req.query
     const data = await login(loginInfo)
 
@@ -58,6 +61,7 @@ app.get('/vacations/fetch', authToken, async (req: Request, res: Response) => {
   }
 
   try {
+    console.log('u were authenticated')
     const role = req.user.userRole; // Get user role form authToken func
 
     /* Since we have only two options for fetching data - single / all
@@ -72,8 +76,13 @@ app.get('/vacations/fetch', authToken, async (req: Request, res: Response) => {
       // Fetch all vacations
       vacations = await fetchVacations();
     }    
-    
-    res.status(200).json({ vacations, role });
+
+    /* Replace image_path with buffer - Not all images are included in the named volume, which is
+      why I use PromiseAllSettled, */
+    const updatedVacations = await handleFetchImageData(vacations)
+    console.log('updated vacations are', updatedVacations)
+
+    res.status(200).json({ updatedVacations, role });
   } catch (err) {
     res.status(500).json({ error: err.message || 'Internal Server Error' });
   }
@@ -82,7 +91,7 @@ app.get('/vacations/fetch', authToken, async (req: Request, res: Response) => {
 app.post('/vacations/add', async (req: Request, res: Response) => {
   try {
     const values = req.body
-    console.log('trying to add', values.image_url)
+    console.log('trying to add', values.image_path)
     await addVacation(values)
 
     res.status(200).json('Success!')
