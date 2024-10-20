@@ -1,8 +1,9 @@
+import React from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage'
 import RegisterationPage from './pages/RegisterationPage'
 import VacationsPage from './pages/VacationsPage'
-import AddOrEditVacationForm from './comps/AddOrEditVacationForm'
+import VacationFormMainLogic from './comps/AddOrEditForm/VacationFormMainLogic'
 
 export default function App(): JSX.Element {
   return (
@@ -13,8 +14,8 @@ export default function App(): JSX.Element {
           <Route path='/login' element={<LoginPage />}/>
           <Route path='/register' element={<RegisterationPage />} />
           <Route path='/vacations/fetch' element={<VacationsPage />} />
-          <Route path='/vacations/add' element={<AddOrEditVacationForm />} />
-          <Route path='/vacations/edit/:id' element={<AddOrEditVacationForm />} />
+          <Route path='/vacations/add' element={<VacationFormMainLogic />} />
+          <Route path='/vacations/edit/:id' element={<VacationFormMainLogic />} />
         </Routes>
       </Router>
     </div>
