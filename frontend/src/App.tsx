@@ -4,6 +4,7 @@ import LoginPage from './pages/LoginPage'
 import RegisterationPage from './pages/RegisterationPage'
 import VacationsPage from './pages/VacationsPage'
 import VacationFormMainLogic from './comps/AddOrEditForm/VacationFormMainLogic'
+import FollowersStats from './comps/FollowersStats'
 
 export default function App(): JSX.Element {
   return (
@@ -16,6 +17,7 @@ export default function App(): JSX.Element {
           <Route path='/vacations/fetch' element={<VacationsPage />} />
           <Route path='/vacations/add' element={<VacationFormMainLogic />} />
           <Route path='/vacations/edit/:id' element={<VacationFormMainLogic />} />
+          <Route path='/vacations/stats' element={<FollowersStats />} />
         </Routes>
       </Router>
     </div>

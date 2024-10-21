@@ -1,5 +1,6 @@
+import React from 'react'
 import { Radio } from 'antd';
-import { FilterControlsProps } from '../../types';
+import { FilterControlsProps } from '../../../types';
 
 export default function FilterControls({
   sortOrder,
@@ -23,6 +24,7 @@ export default function FilterControls({
         <Radio.Button value="all">All Vacations</Radio.Button>
         <Radio.Button value="notBegun">Not Begun</Radio.Button>
         <Radio.Button value="active">Currently Active</Radio.Button>
+        <Radio.Button value="followed">Followed Vacations</Radio.Button>
       </Radio.Group>
     </div>
   );

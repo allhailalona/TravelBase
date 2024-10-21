@@ -5,8 +5,15 @@ import { Vacation } from '../types'
 
 export async function fetchVacations() {
   try {
-    const [rows] = await pool.query('SELECT * FROM vacations')
-    return rows
+    // Fetch vacation data
+    const [vacations] = await pool.query('SELECT * FROM vacations')
+    console.log('vacations are', vacations)
+
+    // Fetch followers data as well
+    const [followers] = await pool.query('SELECT * FROM followers')
+    console.log('followers are', followers)
+
+    return { vacations, followers }
   } catch (err) {
     console.error('err in fetchVacations in MySQLUtils.ts')
     throw err
@@ -85,10 +92,18 @@ export async function addVacation(values: Omit<Vacation, 'vacation_id'>) {
 
 export async function deleteVacation(id: number) {
   try {
-    const query = 'DELETE FROM vacations WHERE vacation_id = ?';
-    await pool.query(query, [id]);
-    console.log('Vacation deleted successfully');
+    await pool.query('START TRANSACTION');
+
+    // Delete associated followers first
+    await pool.query('DELETE FROM followers WHERE vacation_id = ?', [id]);
+
+    // Then delete the vacation
+    await pool.query('DELETE FROM vacations WHERE vacation_id = ?', [id]);
+
+    await pool.query('COMMIT');
+    console.log('Vacation and associated followers deleted successfully');
   } catch (err) {
+    await pool.query('ROLLBACK');
     console.error('Error in deleteVacation:', err);
     throw err;
   }
@@ -154,6 +169,39 @@ export async function editVacation(vacation: Vacation) {
     console.log('Vacation updated successfully');
   } catch (err) {
     console.error('err in editVacation:', err);
+    throw err;
+  }
+}
+
+export async function updateFollow(vacationId: number, userId: number) {
+  try {
+    console.log('Updating follow for vacationId:', vacationId, 'userId:', userId);
+    
+    // Check if the entry exists
+    const [rows]: any = await pool.query(
+      'SELECT * FROM followers WHERE user_id = ? AND vacation_id = ?',
+      [userId, vacationId]
+    );
+
+    if (rows.length > 0) {
+      // Entry exists, delete it
+      await pool.query(
+        'DELETE FROM followers WHERE user_id = ? AND vacation_id = ?',
+        [userId, vacationId]
+      );
+      console.log('Deleted follow entry');
+      return { action: 'unfollowed' };
+    } else {
+      // Entry doesn't exist, add it
+      await pool.query(
+        'INSERT INTO followers (user_id, vacation_id) VALUES (?, ?)',
+        [userId, vacationId]
+      );
+      console.log('Added follow entry');
+      return { action: 'followed' };
+    }
+  } catch (err) {
+    console.error('Error in updateFollow in mysqlutils.ts:', err);
     throw err;
   }
 }

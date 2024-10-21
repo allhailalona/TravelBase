@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Pagination } from 'antd'
 import { useNavigate } from 'react-router-dom'
 import { useGeneralContext } from '../context/GeneralContext'
@@ -7,23 +7,24 @@ import { useVacationFilters } from '../hooks n custom funcs/useVacationFilters'
 import FilterControls from '../comps/FilterControls'
 import AdminCard from '../comps/AdminCard'
 import UserCard from '../comps/UserCard'
-import { Vacation, Role } from '../../types'
+import { Vacation, Follower } from '../../../types'
 
 export default function VacationsPage(): JSX.Element {
   const navigate = useNavigate()
-  const { setVacations, vacations } = useGeneralContext()
-  const [role, setRole] = useState<Role>()
+  const { vacations, setVacations, followers, setFollowers, userRole, userId } = useGeneralContext()
 
   // Fetch vacation data and user role
   useEffect(() => {
     const fetchData = async () => {
       const data = await authAndData('all');
+      console.log('vacations are', data.vacations)
       setVacations(data.vacations)
-      setRole(data.role)
+      setFollowers(data.followers)
+      userRole.current = data.role
+      userId.current = data.userId
     };
     fetchData();
   }, []);
-
 
   // Apply filters and sorting to vacations
   const {
@@ -32,7 +33,7 @@ export default function VacationsPage(): JSX.Element {
     filterType,
     setFilterType,
     toggleSortOrder
-  } = useVacationFilters(vacations, role);
+  } = useVacationFilters(vacations, userRole.current, userId.current, followers);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -49,19 +50,53 @@ export default function VacationsPage(): JSX.Element {
     setCurrentPage(page);
   };
 
+  /* 
+    Since this project is relatively small, certain compromises are made to save time and improve performance over security and privacy
+    * A more secure yet cumbersome and more intensive approach would be to perform the functions below in the backend, so the entire followers data 
+      is not present in the front
+    * The isUserFollowingVacation function, has a copy in useVacationFilters.tsx, moving the func to a seperate file would be overcomplication
+  */
+  function countFollowers(followers: Follower[], targetVacationId: number) {
+    return followers.reduce((count, follower) => {
+      // If the vacation_id matches the target, increment the count
+      if (follower.vacation_id === targetVacationId) {
+        return count + 1;
+      }
+      // Otherwise, just return the current count
+      return count;
+    }, 0); // Start the count at 0
+  }
+
+  function isUserFollowingVacation(userId: number, vacationId: number, followers: Array<{user_id: number, vacation_id: number}>): boolean {
+    console.log(`Checking if user ${userId} is following vacation ${vacationId}`);
+    
+    const isFollowing = followers.some(follower => 
+      Number(follower.user_id) === Number(userId) && Number(follower.vacation_id) === Number(vacationId)
+    );
+  
+    console.log(`User ${userId} is ${isFollowing ? '' : 'not '}following vacation ${vacationId}`);
+    return isFollowing;
+  }
+
   // Render appropriate card based on user role
   const renderVacationCard = (vacation: Vacation) => {
-    return role === 'admin' 
+    return userRole.current === 'admin' 
       ? <AdminCard key={vacation.vacation_id} vacation={vacation} />
-      : <UserCard key={vacation.vacation_id} vacation={vacation} />;
+      : <UserCard 
+          key={vacation.vacation_id} 
+          vacation={vacation} 
+          totalFollowers={countFollowers(followers, vacation.vacation_id)}
+          isUserFollowingVacation={isUserFollowingVacation(userId.current, vacation.vacation_id, followers)}
+            
+        />; 
   };
 
   return (
     <div className="container mx-auto px-4">
       {/* Display user role */}
-      <p className="text-lg font-bold my-4">User is {role}</p>
+      <p className="text-lg font-bold my-4">User is {userRole.current}</p>
       {/* Render filter controls for user role */}
-      {role === 'user' && (
+      {userRole.current === 'user' && (
         <FilterControls
           sortOrder={sortOrder}
           filterType={filterType}
@@ -71,8 +106,11 @@ export default function VacationsPage(): JSX.Element {
       )}
 
       {/* Render Add button for admin role */}
-      {role === 'admin' && (
-        <button onClick={() => navigate('/vacations/add')}>Add A Vacation</button>
+      {userRole.current === 'admin' && (
+        <>
+          <button onClick={() => navigate('/vacations/add')}>Add A Vacation</button>
+          <button onClick={() => navigate('/vacations/stats')}>stats</button>
+        </>
       )}
       {vacations && vacations.length > 0 ? (
         <>          

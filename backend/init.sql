@@ -63,3 +63,15 @@ INSERT INTO vacations (destination, description, starting_date, ending_date, pri
 ('Maui', 'Hawaiian Paradise', '2025-04-15', '2025-04-22', 1800.00, 'https://example.com/maui.jpg'),
 ('Cairo', 'Ancient Egypt Explorer', '2025-05-10', '2025-05-17', 1350.00, 'https://example.com/cairo.jpg'),
 ('Rio de Janeiro', 'Carnival City', '2025-06-05', '2025-06-12', 1450.00, 'https://example.com/rio.jpg');
+
+-- Insert sample data into followers table
+SELECT 'About to insert items to followers table' AS ''; -- log
+USE vacation_db;
+
+INSERT INTO followers (user_id, vacation_id) VALUES
+(1, 3), (1, 4), (1, 5),
+(2, 1), (2, 6), (2, 8),
+(3, 2), (3, 7), (3, 9),
+(4, 10), (4, 11), (4, 12),
+(5, 1), (5, 3), (5, 5),
+(6, 2), (6, 4), (6, 6);

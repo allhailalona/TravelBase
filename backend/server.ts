@@ -3,8 +3,8 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { register, login } from './userAuth'
-import { fetchVacations, fetchSingleVacation, addVacation, deleteVacation, editVacation } from './MySQLUtils'
+import { register, login } from './loginOrRegister'
+import { fetchVacations, fetchSingleVacation, addVacation, deleteVacation, editVacation, updateFollow } from './MySQLUtils'
 import { handleFetchImageData } from './dockerUtils'
 import { genTokens, authToken } from './JWTTokensUtils'
 import { getRedisState, setRedisState } from './redisUtils'
@@ -22,12 +22,10 @@ app.use(express.json())
 
 app.post('/register', async (req: Request, res: Response) => {
   try {
-    const values = req.body
-    const data = await register(values)
-    console.log('data.user.role is', data.user.role)
+    const registerInfo = req.body
+    const data = await register(registerInfo)
 
-    // Gen token
-    const { accessToken, refreshToken } = await genTokens(String(data.user.id), data.user.role)
+    const { accessToken, refreshToken } = await genTokens(String(data.user.id), data.user.role) // Gen token
 
     // Return both tokens and user data without password
     res.status(200).json({ accessToken, refreshToken, data })
@@ -39,12 +37,10 @@ app.post('/register', async (req: Request, res: Response) => {
 
 app.get('/login', async (req: Request, res: Response) => {
   try {
-    console.log('hello from login')
     const loginInfo = req.query
     const data = await login(loginInfo)
 
-    const { accessToken, refreshToken } = await genTokens(String(data.user.id), data.user.role)
-    console.log('tokens are', accessToken, refreshToken)
+    const { accessToken, refreshToken } = await genTokens(String(data.user.id), data.user.role) // Gen token
 
     // Return both tokens and user data without password
     res.status(200).json({ accessToken, refreshToken, data })
@@ -63,26 +59,33 @@ app.get('/vacations/fetch', authToken, async (req: Request, res: Response) => {
   try {
     console.log('u were authenticated')
     const role = req.user.userRole; // Get user role form authToken func
+    const userId = req.user.userId
+    console.log('vacations fetch userId is', userId)
 
     /* Since we have only two options for fetching data - single / all
       I create two functions, had we have several ways, for instnace - many not all
       etc, I would prolly create one function to rule them all!
     */
    let vacations
+   let followers
     if (req.query.id && req.query.id.length > 0)  {
       // Fetch a single vacation according to id
+      console.log('fetching single vacation id is', req.query.id)
       vacations = await fetchSingleVacation(req.query.id)
     } else {
-      // Fetch all vacations
-      vacations = await fetchVacations();
+      // Fetch all vacations and followers
+      const data = await fetchVacations();
+      vacations = data.vacations
+      followers = data.followers
     }    
 
     /* Replace image_path with buffer - Not all images are included in the named volume, which is
       why I use PromiseAllSettled, */
     const updatedVacations = await handleFetchImageData(vacations)
-    console.log('updated vacations are', updatedVacations)
+    console.log('userId is', userId)
+    console.log('role is', role)
 
-    res.status(200).json({ updatedVacations, role });
+    res.status(200).json({ updatedVacations, followers, role, userId });
   } catch (err) {
     res.status(500).json({ error: err.message || 'Internal Server Error' });
   }
@@ -103,6 +106,7 @@ app.post('/vacations/add', async (req: Request, res: Response) => {
 app.post('/vacations/delete', async (req: Request, res: Response) => {
   try {
     const id = req.body.id
+    console.log('about to delete id', id)
     await deleteVacation(id)
 
     res.status(200).json('Success!')
@@ -121,6 +125,17 @@ app.put('/vacations/edit', async (req: Request, res: Response) => {
     res.status(200).json('Edit Successful!')
   } catch (err) {
     res.status(err.status || 500).json({ error: err.message || 'Internal Server Error'})
+  }
+})
+
+app.put('/vacations/updateFollow', async (req: Request, res: Response) => {
+  try {
+    const { vacationId, userId } = req.body
+    await updateFollow(vacationId, userId)
+
+    res.sendStatus(200) // I'll handle sucess message in the front directly
+  } catch (err) {
+    res.status(err.status || 500).json({ error: err.message || 'Internal Server Error' })
   }
 })
 

@@ -1,7 +1,8 @@
+import React from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Form, Input, Button, message } from 'antd'
 import { useGeneralContext } from '../context/GeneralContext'
-import { User } from '../../types'
+import { User } from '../../../types'
 
 export default function RegisterationPage(): JSX.Element {
   const navigate = useNavigate()
@@ -36,7 +37,6 @@ export default function RegisterationPage(): JSX.Element {
     const data = await res.json()
     localStorage.setItem('accessToken', data.accessToken)
     localStorage.setItem('refreshToken', data.refreshToken)
-    setUser(data) // Store user in context
 
     // Done!
     message.success('Registeration Successful')

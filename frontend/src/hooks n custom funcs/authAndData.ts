@@ -1,4 +1,5 @@
 import { message } from 'antd'
+import { Vacation, Follower, UserRole } from '../../../types'
 
 /**
  * Authenticates user and fetches data based on the specified mode.
@@ -9,15 +10,18 @@ import { message } from 'antd'
  *
  * @param {('none'|'single'|'all')} mode - The operation mode
  * @param {number} [id] - The vacation ID (required for 'single' mode)
- * @returns {Promise<{role: string, vacations: any}>} The user's role and fetched vacations
+ * @returns {Promise<{vacations: any, role: string, userId: string}>} The user's role and fetched vacations
  */
 export const authAndData = async (mode: 'none' | 'single' | 'all', id?: number) => {
-  let role: 'user' | 'admin' | undefined = undefined
-  let vacations = []
+  console.log('mode is', mode, 'id is', id)
+  let vacations: Vacation[] = []
+  let followers: Follower[] = []
+  let role: UserRole
+  let userId: number
 
   // Get the access token from local storage
   const accessToken = localStorage.getItem('accessToken');
-  let endpoint
+  let endpoint: string
 
   // Determine the appropriate endpoint based on the mode
   if (mode === 'none') {
@@ -49,7 +53,7 @@ export const authAndData = async (mode: 'none' | 'single' | 'all', id?: number) 
       // Handle other errors
       message.error('Something Went Wrong, Please Login Again!');
       console.log('token was invalid or unknown error, redirecting to login page')
-      window.location.href = '/login';
+      // window.location.href = '/login';
       throw new Error(`Error in fetching data: ${errorData || 'unknown error'}`);
     }
   }
@@ -61,12 +65,12 @@ export const authAndData = async (mode: 'none' | 'single' | 'all', id?: number) 
   if (mode === 'all') vacations = data.updatedVacations;
   if (mode === 'single') vacations = data.updatedVacations[0]; // Enables me to use vacations directly in the editing form
   
-  // Set the user role
-  role = data.role;
-
-  console.log('vacations are', vacations)
+  followers = data.followers // Set followers
+  role = data.role // Set role
+  userId = data.userId // Set userId
   console.log('role is', role)
-  return { role, vacations };
+
+  return { vacations, followers, role, userId };
 };
 
 /**
@@ -92,8 +96,8 @@ const refreshTokens = async () => {
       console.log('an unknown error has occured while trying to use refresh token')
       message.error('An Unknown Error Has Occurred While Refreshing Tokens!');
     }
-    console.log('hello from refrehs token error res block redirecting to login')
-    window.location.href = '/login';
+    console.log('hello from refresh token error res block redirecting to login')
+    // window.location.href = '/login';
     throw new Error(`Error in refresh-token request: ${errorData}`);
   }
 

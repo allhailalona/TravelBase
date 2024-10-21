@@ -34,7 +34,7 @@ export async function register(values: User) {
       user
     }
   } catch (err) {
-    console.error('err in register func is userAuth.ts')
+    console.error('err in register func is loginOrRegister.ts')
     throw err
   }
 }
@@ -68,7 +68,7 @@ export async function login(loginInfo: User) {
       }
     }
   } catch (err) {
-    console.error('err in login func in userAuth.ts')
+    console.error('err in login func in loginOrRegister.ts')
     throw err
   }
 }

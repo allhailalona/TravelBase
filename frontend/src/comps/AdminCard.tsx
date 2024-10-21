@@ -2,7 +2,7 @@ import React from 'react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom'
 import { authAndData } from '../hooks n custom funcs/authAndData'
-import { Vacation } from '../../types';
+import { Vacation } from '../../../types';
 import { message, Popconfirm } from 'antd'
 import { QuestionCircleOutlined } from '@ant-design/icons';
 import { FaCalendarAlt, FaDollarSign, FaImage, FaPencilAlt, FaTrashAlt } from 'react-icons/fa';
@@ -14,7 +14,6 @@ export default function AdminCards({ vacation }: { vacation: Vacation }) {
     e.stopPropagation(); // Add this line
     const { role } = await authAndData('none')
     if (role === 'admin') {
-      console.log('fuck')
       const res = await fetch('http://localhost:3000/vacations/delete', {
         method: 'POST', 
         headers: {
@@ -32,7 +31,7 @@ export default function AdminCards({ vacation }: { vacation: Vacation }) {
       }
   
       message.success('Successfully deleted vacation! Refreshing page...')
-      window.location.reload(true)
+      window.location.reload()
     }
   }
 

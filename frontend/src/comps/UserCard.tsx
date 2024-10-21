@@ -1,10 +1,38 @@
+import React from 'react'
 import { format } from 'date-fns';
-import { Vacation } from '../../types';
+import { authAndData } from '../hooks n custom funcs/authAndData'
+import { useGeneralContext } from '../context/GeneralContext'
+import { Vacation } from '../../../types';
 import { FaCalendarAlt, FaDollarSign, FaImage } from 'react-icons/fa';
 
-export default function UserCards({ vacation }: { vacation: Vacation }) {
+export default function UserCards({ vacation, totalFollowers, isUserFollowingVacation }: { vacation: Vacation, totalFollowrs: number, isUserFollowingVacation: boolean }) {
+  const { userId } = useGeneralContext()
+
+  const updateFollow = async () => {
+    const { role } = await authAndData('none')
+    if (role === 'user') {
+      const res = await fetch('http://localhost:3000/vacations/updateFollow', {
+        method: 'PUT', 
+        headers: {
+          'Content-Type': 'application/json'
+        }, 
+        body: JSON.stringify({ vacationId: vacation.vacation_id, userId: userId.current })
+      })
+  
+      if (!res) {
+        const errorData = await res.json()
+        throw new Error(`Error in fetching data: ${errorData || 'unknown error'}`);
+      } else {
+        window.location.reload()
+      }
+    }
+  }
+
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+      <div>this card has {totalFollowers} followers</div>
+      <div>the current user is {!isUserFollowingVacation && ('not')} following this vacation</div>
+      <button onClick={updateFollow}>click here to follow/unfollow</button>
       <div className="relative">
         {vacation.image_path ? (
           <img src={vacation.image_path} alt={vacation.destination} className="w-full h-48 object-cover" />

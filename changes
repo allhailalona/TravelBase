@@ -1,2 +1,9 @@
-- mod useAuthAndData to allow fetching a single vacation to display on edit mode- implement three options logic
-- rename addresses
+- Improve context: remove user state, replace role with ref and add a userId ref
+- Update delete function since the keys in vacation and users table are linked as foreign links to the followers table
+
+It's a good opportunity to mention that certain compromises are made throughout the project to improve performance, save time and most notably, 
+simplify the code, over maintaining high security and privacy standards. This is a small project, so IMO those sacrifices are acceptable.
+Exmaples:
+  Included both refs in the context although they are rarely used in the project - improve readability and make the project easier to expand
+  Provide a copy of the isUserFollowingVacation instead of moving the func to a seperate file
+  Updating the UI by a refresh, although a smoother approach would be repeating the fetch vacations request manually

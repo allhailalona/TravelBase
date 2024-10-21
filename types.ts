@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction } from 'react'
+import { Dispatch, SetStateAction, MutableRefObject } from 'react'
 
 export type User = {
   id?: number
@@ -19,11 +19,18 @@ export type Vacation = {
   image_path: string | Buffer
 }
 
+export type Follower = {
+  user_id: number
+  vacation_id: number
+}
+
 export type GeneralContext = {
-  user: User | undefined
-  setUser: Dispatch<SetStateAction<User | undefined>>
   vacations: Vacation[] | undefined
   setVacations: Dispatch<SetStateAction<Vacation[] | undefined>>
+  followers: Follower[] | undefined
+  setFollowers: Dispatch<SetStateAction<Follower[] | undefined>>
+  userRole: MutableRefObject<UserRole>
+  userId: MutableRefObject<number | undefined>
 }
 
 export type UserRole = 'user' | 'admin' | undefined
@@ -40,11 +47,9 @@ export type TokenPayload = {
 
 export type FilterControlsProps = {
   sortOrder: 'asc' | 'desc';
-  showNotBegun: boolean;
-  showActive: boolean;
+  filterType: 'all' | 'notBegun' | 'active' | 'followed';
   toggleSortOrder: () => void;
-  setShowNotBegun: (value: boolean) => void;
-  setShowActive: (value: boolean) => void;
+  setFilterType: (value: 'all' | 'notBegun' | 'active' | 'followed') => void;
 }
 
 export type AuthAndDataResult = {

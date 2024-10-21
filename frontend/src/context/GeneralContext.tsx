@@ -1,14 +1,17 @@
-import { createContext, useContext, useState, ReactNode } from 'react'
-import type { User, Vacation, GeneralContext } from '../../types'
+import React, { createContext, useContext, useState, ReactNode, useRef } from 'react'
+import type { Vacation, Follower, UserRole, GeneralContext } from '../../../types'
 
 const GeneralContext = createContext<GeneralContext | undefined>(undefined)
 
 export function GeneralProvider({ children } : { children: ReactNode }) {
-  const [user, setUser] = useState<User | undefined>(undefined)
   const [vacations, setVacations] = useState<Vacation[] | undefined>(undefined)
+  const [followers, setFollowers] = useState<Follower[] | undefined>(undefined)
+  // Confused about the code below? Read the 'mod context...' commit description
+  const userRole = useRef<UserRole>(undefined)
+  const userId = useRef<number | undefined>(undefined)
 
   return (
-    <GeneralContext.Provider value={{ user, setUser, vacations, setVacations }}>
+    <GeneralContext.Provider value={{ vacations, setVacations, followers, setFollowers, userRole, userId }}>
       { children }
     </GeneralContext.Provider>
   )

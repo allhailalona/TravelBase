@@ -1,14 +1,13 @@
+import React from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Form, Input, Button, message } from 'antd'
 import { useGeneralContext } from '../context/GeneralContext'
-import { User } from '../../types'
+import { User } from '../../../types'
 
 export default function LoginPage(): JSX.Element {
   const navigate = useNavigate()
-  const { setUser } = useGeneralContext()
 
   const handleLogin = async (values: User) => {
-    console.log('login values are', values)
 
     const params = new URLSearchParams(values as Record<string, string>)
     const url = `http://localhost:3000/login?${params.toString()}`
@@ -24,10 +23,8 @@ export default function LoginPage(): JSX.Element {
     }
     
     const data = await res.json()
-    console.log('data returned is', data)
     localStorage.setItem('accessToken', data.accessToken)
     localStorage.setItem('refreshToken', data.refreshToken)
-    setUser(data) // Store user in context
 
     // Done!
     message.success('Login Successful')

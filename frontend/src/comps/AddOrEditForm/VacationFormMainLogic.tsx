@@ -1,15 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form, message } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useGeneralContext } from '../../context/GeneralContext'
 import { authAndData } from '../../hooks n custom funcs/authAndData'
 import VacationForm from './VacationFormReturn';
 import { validateDateRange } from './VacationFormValidators';
-import { Vacation, Role } from '../../../../types';
+import { Vacation } from '../../../../types';
 
 export default function AddVacationForm() {
   // Hooks for navigation and routing
   const navigate = useNavigate();
   const { id } = useParams()
+  const { userRole } = useGeneralContext()
 
   // Form and state management
   const [form] = Form.useForm();
@@ -19,20 +21,19 @@ export default function AddVacationForm() {
   const [originalImage, setOriginalImage] = useState<string>('');
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-  
-  const role: Role = useRef()
 
   // Fetch vacation data and/ or user role
   useEffect(() => {
     const helperFunc = async () => {
       try {
         if (id) {
+          console.log('editing mode detected')
           const data = await authAndData('single', id);
           setTempVacations(data.vacations);
-          role.current = data.role;
+          userRole.current = data.role;
         } else {
           const data = await authAndData('none');
-          role.current = data.role;
+          userRole.current = data.role;
         }
       } catch (err) {
         message.error('Failed to load data.');
@@ -93,11 +94,8 @@ export default function AddVacationForm() {
 
     // Determine API endpoint based on add/edit mode
     // FOR SOME REASON I CANNOT INCLUDE A CONDITIONALLY ASSIGNED VARIALBE LIKE 'ENDPOINT' IN THE FETCH REQUEST DIRECTLY, INSTEAD OF THE MANUAL ADDRESS, SAVING PRECIOUS CODING SPACE.
-    const data = await authAndData('none')
-    role.current = data.role
-    console.log('role current value is', role.current)
-    if (role.current === 'admin') {
-      console.log('role is admin')
+    const { role } = await authAndData('none')
+    if (role === 'admin') {
       if (id) {
         console.log('calling edit listener vacation is', vacation)
         const res = await fetch(`http://localhost:3000/vacations/edit`, {
@@ -134,7 +132,7 @@ export default function AddVacationForm() {
   };
 
   // Render form
-  if (role.current !== 'admin') return <p>Unauthorized access.</p>;
+  if (userRole.current !== 'admin') return <p>Unauthorized access.</p>;
   if (loading) return <p>Loading...</p>;
   
   return (
