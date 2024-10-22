@@ -12,10 +12,9 @@ import {
   editVacation,
   updateFollow,
 } from "./MySQLUtils";
-import { handleFetchImageData } from "./dockerUtils";
+import { handleFetchImageData, fetchAllImages } from "./dockerUtils";
 import { genTokens, authToken } from "./JWTTokensUtils";
 import { getRedisState, setRedisState } from "./redisUtils";
-import { Vacation } from "../types";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -32,9 +31,12 @@ app.post("/register", async (req: Request, res: Response) => {
     const registerInfo = req.body;
     const data = await register(registerInfo);
 
+    const username = `${data.user.firstName} ${data.user.lastName}`
+
     const { accessToken, refreshToken } = await genTokens(
       String(data.user.id),
       data.user.role,
+      username
     ); // Gen token
 
     // Return both tokens and user data without password
@@ -52,9 +54,12 @@ app.get("/login", async (req: Request, res: Response) => {
     const loginInfo = req.query;
     const data = await login(loginInfo);
 
+    const username = `${data.user.firstName} ${data.user.lastName}`
+
     const { accessToken, refreshToken } = await genTokens(
       String(data.user.id),
       data.user.role,
+      username
     ); // Gen token
 
     // Return both tokens and user data without password
@@ -66,6 +71,15 @@ app.get("/login", async (req: Request, res: Response) => {
       .json({ error: err.message || "Internal Server Error" });
   }
 });
+
+app.get('/fetch-all-images', async (req: Request, res: Response) => {
+  try {
+    const pictures = await fetchAllImages()
+    res.status(200).json(pictures)
+  } catch (err) {
+    res.status(err.status || 500).json({ error: err.message || 'Unknown Server Error'})
+  }
+})
 
 app.get("/vacations/fetch", authToken, async (req: Request, res: Response) => {
   if (req.authError) {
@@ -80,7 +94,7 @@ app.get("/vacations/fetch", authToken, async (req: Request, res: Response) => {
     console.log("u were authenticated");
     const role = req.user.userRole; // Get user role form authToken func
     const userId = req.user.userId;
-    console.log("vacations fetch userId is", userId);
+    const username = req.user.username
 
     /* Since we have only two options for fetching data - single / all
       I create two functions, had we have several ways, for instnace - many not all
@@ -90,7 +104,6 @@ app.get("/vacations/fetch", authToken, async (req: Request, res: Response) => {
     let followers;
     if (req.query.id && req.query.id.length > 0) {
       // Fetch a single vacation according to id
-      console.log("fetching single vacation id is", req.query.id);
       vacations = await fetchSingleVacation(req.query.id);
     } else {
       // Fetch all vacations and followers
@@ -102,10 +115,8 @@ app.get("/vacations/fetch", authToken, async (req: Request, res: Response) => {
     /* Replace image_path with buffer - Not all images are included in the named volume, which is
       why I use PromiseAllSettled, */
     const updatedVacations = await handleFetchImageData(vacations);
-    console.log("userId is", userId);
-    console.log("role is", role);
 
-    res.status(200).json({ updatedVacations, followers, role, userId });
+    res.status(200).json({ updatedVacations, followers, role, userId, username });
   } catch (err) {
     res.status(500).json({ error: err.message || "Internal Server Error" });
   }

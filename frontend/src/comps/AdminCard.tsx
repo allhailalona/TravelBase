@@ -2,6 +2,7 @@ import React from "react";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { authAndData } from "../hooks n custom funcs/authAndData";
+import { convertBufferToBase64, isValidBase64 } from '../hooks n custom funcs/imageUtils'
 import { message, Popconfirm } from "antd";
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import {
@@ -45,12 +46,7 @@ export default function AdminCards({ vacation }: { vacation: Vacation }) {
   };
 
   // Convert Buffer to base64 string
-  const base64String = btoa(
-    String.fromCharCode.apply(null, vacation.image_path.data),
-  );
-
-  // Create data URL
-  const dataUrl = `data:image/jpeg;base64,${base64String}`;
+  const dataUrl = convertBufferToBase64(vacation.image_path.data)
 
   return (
     <div className="rounded-xl overflow-hidden">
@@ -70,7 +66,7 @@ export default function AdminCards({ vacation }: { vacation: Vacation }) {
           <button
             onClick={editCard}
             className="glass"
-            style={{ background: "rgba(0, 0, 255, 0.2)" }}
+            style={{ background: "rgba(0, 0, 255, 0.1)" }}
           >
             <FaPencilAlt className="text-lg" />
           </button>
@@ -84,7 +80,7 @@ export default function AdminCards({ vacation }: { vacation: Vacation }) {
             <button
               onClick={(e) => e.stopPropagation()}
               className="glass"
-              style={{ background: "rgba(255, 0, 0, 0.2)" }}
+              style={{ background: "rgba(255, 0, 0, 0.15)" }}
             >
               <FaTrashAlt className="text-lg" />
             </button>

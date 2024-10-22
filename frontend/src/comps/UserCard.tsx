@@ -1,6 +1,7 @@
 import React from "react";
 import { format } from "date-fns";
 import { authAndData } from "../hooks n custom funcs/authAndData";
+import { convertBufferToBase64 } from '../hooks n custom funcs/imageUtils'
 import { useGeneralContext } from "../context/GeneralContext";
 import { Vacation } from "../../../types";
 import { FaCalendarAlt, FaDollarSign, FaImage, FaHeart } from "react-icons/fa";
@@ -17,6 +18,7 @@ export default function UserCards({
   isUserFollowingVacation: boolean;
 }) {
   const { userId } = useGeneralContext();
+  console.log('vacation is', vacation)
 
   const updateFollow = async () => {
     const { role } = await authAndData("none");
@@ -42,6 +44,8 @@ export default function UserCards({
       }
     }
   };
+
+  const dataUrl = convertBufferToBase64(vacation.image_path.data)
 
   return (
     <div className="rounded-xl overflow-hidden">

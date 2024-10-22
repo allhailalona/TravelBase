@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Pagination } from "antd";
+import { Pagination, Button } from "antd";
 import { useNavigate } from "react-router-dom";
 import { useGeneralContext } from "../context/GeneralContext";
 import { authAndData } from "../hooks n custom funcs/authAndData";
@@ -11,18 +11,25 @@ import { Vacation, Follower } from "../../../types";
 
 export default function VacationsPage(): JSX.Element {
   const navigate = useNavigate();
-  const { vacations, setVacations, followers, setFollowers, userRole, userId } =
-    useGeneralContext();
+  const { vacations, setVacations, followers, setFollowers, userRole, userId, username } = useGeneralContext();
+
+  // Separate cleanup effect that runs first
+  useEffect(() => {
+    localStorage.removeItem("sortOrder");
+    localStorage.removeItem("filterType");
+  }, []); // Empty dependency array ensures it runs once on mount
 
   // Fetch vacation data and user role
   useEffect(() => {
     const fetchData = async () => {
       const data = await authAndData("all");
-      console.log("vacations are", data.vacations);
+      console.log("user name is", data);
       setVacations(data.vacations);
       setFollowers(data.followers);
       userRole.current = data.role;
       userId.current = data.userId;
+      username.current = data.username
+      console.log('updated username to ', data.username)
     };
     fetchData();
   }, []);
@@ -88,9 +95,6 @@ export default function VacationsPage(): JSX.Element {
         Number(follower.vacation_id) === Number(vacationId),
     );
 
-    console.log(
-      `User ${userId} is ${isFollowing ? "" : "not "}following vacation ${vacationId}`,
-    );
     return isFollowing;
   }
 
@@ -112,22 +116,32 @@ export default function VacationsPage(): JSX.Element {
     );
   };
 
+  const logOut = () => {
+    localStorage.clear()
+    navigate('/login')
+  }
+
   return (
     <div className="px-8 bg-gray-800">
       {/* Display user role */}
       {/* Render filter controls for user role */}
       {userRole.current === "user" && (
-        <FilterControls
-          sortOrder={sortOrder}
-          filterType={filterType}
-          toggleSortOrder={toggleSortOrder}
-          setFilterType={setFilterType}
-        />
+        <div className='flex flex-row gap-2 items-center'>
+          <Button onClick={logOut} size='large' className='font-bold'>Log Out</Button>
+          <FilterControls
+            sortOrder={sortOrder}
+            filterType={filterType}
+            toggleSortOrder={toggleSortOrder}
+            setFilterType={setFilterType}
+          />
+          <h2 className='font-bold text-white text-xl'>Welcome {username.current}!</h2>
+        </div>
       )}
 
       {/* Render Add button for admin role */}
       {userRole.current === "admin" && (
-        <div className="flex flex-row gap-3">
+        <div className="flex flex-row gap-3 items-center">
+          <Button onClick={logOut} size='large' className='font-bold'>Log Out</Button>
           <button
             onClick={() => navigate("/vacations/add")}
             className="bg-white p-2 my-2 rounded-lg font-bold"
@@ -140,6 +154,7 @@ export default function VacationsPage(): JSX.Element {
           >
             Stats
           </button>
+          <h2 className='font-bold text-white text-xl flex justify-end'>Welcome {username.current}!</h2>
         </div>
       )}
       {vacations && vacations.length > 0 ? (

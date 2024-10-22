@@ -13,20 +13,21 @@ dotenv.config({ path: path.resolve(__dirname, "../.env") });
 export const genTokens = async (
   userId: string,
   userRole: UserRole,
+  username: string
 ): Promise<Tokens> => {
-  const accessToken = jwt.sign({ userId, userRole }, process.env.JWT_SECRET, {
+  const accessToken = jwt.sign({ userId, userRole, username }, process.env.JWT_SECRET, {
     expiresIn: "3m",
   });
   const refreshToken = jwt.sign(
-    { userId, userRole },
+    { userId, userRole, username },
     process.env.JWT_SECRET,
     // No expiration option specified
   );
 
   // Save refresh token in Redis for 3 days
-  await setRedisState(refreshToken, { userId, userRole }, 3);
+  await setRedisState(refreshToken, { userId, userRole, username }, 3);
 
-  return { accessToken, refreshToken };
+  return { accessToken, refreshToken, username };
 };
 
 export const authToken = (req: Request, res: Response, next: NextFunction) => {
@@ -62,7 +63,7 @@ export const authToken = (req: Request, res: Response, next: NextFunction) => {
         };
       }
     } else {
-      console.log("access token is valid");
+      console.log("access token is valid user is", user);
       req.user = user;
     }
     next();

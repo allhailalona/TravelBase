@@ -16,11 +16,11 @@ export const authAndData = async (
   mode: "none" | "single" | "all",
   id?: number,
 ) => {
-  console.log("mode is", mode, "id is", id);
   let vacations: Vacation[] = [];
   let followers: Follower[] = [];
   let role: UserRole;
   let userId: number;
+  let username : string;
 
   // Get the access token from local storage
   const accessToken = localStorage.getItem("accessToken");
@@ -60,7 +60,7 @@ export const authAndData = async (
       console.log(
         "token was invalid or unknown error, redirecting to login page",
       );
-      // window.location.href = '/login';
+      window.location.href = '/login';
       throw new Error(
         `Error in fetching data: ${errorData || "unknown error"}`,
       );
@@ -77,9 +77,10 @@ export const authAndData = async (
   followers = data.followers; // Set followers
   role = data.role; // Set role
   userId = data.userId; // Set userId
-  console.log("role is", role);
+  username = data.username
+  console.log('user name in authndata is', username)
 
-  return { vacations, followers, role, userId };
+  return { vacations, followers, role, userId, username };
 };
 
 /**
@@ -110,7 +111,7 @@ const refreshTokens = async () => {
     console.log(
       "hello from refresh token error res block redirecting to login",
     );
-    // window.location.href = '/login';
+    window.location.href = '/login';
     throw new Error(`Error in refresh-token request: ${errorData}`);
   }
 

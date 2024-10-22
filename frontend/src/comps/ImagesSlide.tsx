@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const ImageSlider = ({ images }) => {
+  console.log('images are', images)
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
@@ -28,13 +29,13 @@ const ImageSlider = ({ images }) => {
   };
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden">
+    <div className="relative w-screen h-screen overflow-hidden flex justify-center items-center">
       {images.map((src, index) => (
         <img
           key={index}
           src={src}
           alt={`Slide ${index + 1}`}
-          className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-500 ${
+          className={`absolute max-h-full max-w-full w-auto h-auto object-contain transition-opacity duration-500 ${
             index === currentIndex ? "opacity-100" : "opacity-0"
           } ${isTransitioning ? "blur-sm" : ""}`}
         />
