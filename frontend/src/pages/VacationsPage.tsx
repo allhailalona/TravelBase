@@ -1,27 +1,28 @@
-import React, { useState, useEffect } from 'react'
-import { Pagination } from 'antd'
-import { useNavigate } from 'react-router-dom'
-import { useGeneralContext } from '../context/GeneralContext'
-import { authAndData } from '../hooks n custom funcs/authAndData';
-import { useVacationFilters } from '../hooks n custom funcs/useVacationFilters'
-import FilterControls from '../comps/FilterControls'
-import AdminCard from '../comps/AdminCard'
-import UserCard from '../comps/UserCard'
-import { Vacation, Follower } from '../../../types'
+import React, { useState, useEffect } from "react";
+import { Pagination } from "antd";
+import { useNavigate } from "react-router-dom";
+import { useGeneralContext } from "../context/GeneralContext";
+import { authAndData } from "../hooks n custom funcs/authAndData";
+import { useVacationFilters } from "../hooks n custom funcs/useVacationFilters";
+import FilterControls from "../comps/FilterControls";
+import AdminCard from "../comps/AdminCard";
+import UserCard from "../comps/UserCard";
+import { Vacation, Follower } from "../../../types";
 
 export default function VacationsPage(): JSX.Element {
-  const navigate = useNavigate()
-  const { vacations, setVacations, followers, setFollowers, userRole, userId } = useGeneralContext()
+  const navigate = useNavigate();
+  const { vacations, setVacations, followers, setFollowers, userRole, userId } =
+    useGeneralContext();
 
   // Fetch vacation data and user role
   useEffect(() => {
     const fetchData = async () => {
-      const data = await authAndData('all');
-      console.log('vacations are', data.vacations)
-      setVacations(data.vacations)
-      setFollowers(data.followers)
-      userRole.current = data.role
-      userId.current = data.userId
+      const data = await authAndData("all");
+      console.log("vacations are", data.vacations);
+      setVacations(data.vacations);
+      setFollowers(data.followers);
+      userRole.current = data.role;
+      userId.current = data.userId;
     };
     fetchData();
   }, []);
@@ -32,17 +33,22 @@ export default function VacationsPage(): JSX.Element {
     sortOrder,
     filterType,
     setFilterType,
-    toggleSortOrder
-  } = useVacationFilters(vacations, userRole.current, userId.current, followers);
-  
+    toggleSortOrder,
+  } = useVacationFilters(
+    vacations,
+    userRole.current,
+    userId.current,
+    followers,
+  );
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10; // Number of items to display per page
 
   // Get vacations for the current page
   const currentVacations = filteredAndSortedVacations.slice(
-    (currentPage - 1) * itemsPerPage, 
-    currentPage * itemsPerPage
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
   );
 
   // Handle page change in pagination
@@ -67,36 +73,50 @@ export default function VacationsPage(): JSX.Element {
     }, 0); // Start the count at 0
   }
 
-  function isUserFollowingVacation(userId: number, vacationId: number, followers: Array<{user_id: number, vacation_id: number}>): boolean {
-    console.log(`Checking if user ${userId} is following vacation ${vacationId}`);
-    
-    const isFollowing = followers.some(follower => 
-      Number(follower.user_id) === Number(userId) && Number(follower.vacation_id) === Number(vacationId)
+  function isUserFollowingVacation(
+    userId: number,
+    vacationId: number,
+    followers: Array<{ user_id: number; vacation_id: number }>,
+  ): boolean {
+    console.log(
+      `Checking if user ${userId} is following vacation ${vacationId}`,
     );
-  
-    console.log(`User ${userId} is ${isFollowing ? '' : 'not '}following vacation ${vacationId}`);
+
+    const isFollowing = followers.some(
+      (follower) =>
+        Number(follower.user_id) === Number(userId) &&
+        Number(follower.vacation_id) === Number(vacationId),
+    );
+
+    console.log(
+      `User ${userId} is ${isFollowing ? "" : "not "}following vacation ${vacationId}`,
+    );
     return isFollowing;
   }
 
   // Render appropriate card based on user role
   const renderVacationCard = (vacation: Vacation) => {
-    return userRole.current === 'admin' 
-      ? <AdminCard key={vacation.vacation_id} vacation={vacation} />
-      : <UserCard 
-          key={vacation.vacation_id} 
-          vacation={vacation} 
-          totalFollowers={countFollowers(followers, vacation.vacation_id)}
-          isUserFollowingVacation={isUserFollowingVacation(userId.current, vacation.vacation_id, followers)}
-            
-        />; 
+    return userRole.current === "admin" ? (
+      <AdminCard key={vacation.vacation_id} vacation={vacation} />
+    ) : (
+      <UserCard
+        key={vacation.vacation_id}
+        vacation={vacation}
+        totalFollowers={countFollowers(followers, vacation.vacation_id)}
+        isUserFollowingVacation={isUserFollowingVacation(
+          userId.current,
+          vacation.vacation_id,
+          followers,
+        )}
+      />
+    );
   };
 
   return (
-    <div className="container mx-auto px-4">
+    <div className="px-8 bg-gray-800">
       {/* Display user role */}
-      <p className="text-lg font-bold my-4">User is {userRole.current}</p>
       {/* Render filter controls for user role */}
-      {userRole.current === 'user' && (
+      {userRole.current === "user" && (
         <FilterControls
           sortOrder={sortOrder}
           filterType={filterType}
@@ -106,14 +126,24 @@ export default function VacationsPage(): JSX.Element {
       )}
 
       {/* Render Add button for admin role */}
-      {userRole.current === 'admin' && (
-        <>
-          <button onClick={() => navigate('/vacations/add')}>Add A Vacation</button>
-          <button onClick={() => navigate('/vacations/stats')}>stats</button>
-        </>
+      {userRole.current === "admin" && (
+        <div className="flex flex-row gap-3">
+          <button
+            onClick={() => navigate("/vacations/add")}
+            className="bg-white p-2 my-2 rounded-lg font-bold"
+          >
+            Add A Vacation
+          </button>
+          <button
+            onClick={() => navigate("/vacations/stats")}
+            className="bg-white p-2 my-2 rounded-lg font-bold"
+          >
+            Stats
+          </button>
+        </div>
       )}
       {vacations && vacations.length > 0 ? (
-        <>          
+        <>
           {/* Grid layout for vacation cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {currentVacations.map(renderVacationCard)}

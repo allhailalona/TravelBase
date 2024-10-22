@@ -3,7 +3,10 @@ export const validateRequired = (value: any) => {
   return null;
 };
 
-export const validateDateRange = (startDate: Date | null, endDate: Date | null) => {
+export const validateDateRange = (
+  startDate: Date | null,
+  endDate: Date | null,
+) => {
   if (!startDate || !endDate) return "Both start and end dates are required";
   if (endDate < startDate) return "End date must be after start date";
   return null;
@@ -21,7 +24,8 @@ export const validateBase64Image = (value: string, isEditMode: boolean) => {
   if (!value) return null; // Empty is okay in edit mode
 
   const isBase64 = /^data:image\/[a-z]+;base64,/.test(value);
-  if (!isBase64) return "Invalid base64 image data. Please provide a valid base64 encoded image.";
-  
+  if (!isBase64)
+    return "Invalid base64 image data. Please provide a valid base64 encoded image.";
+
   return null;
 };

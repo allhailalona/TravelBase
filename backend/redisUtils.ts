@@ -1,13 +1,13 @@
-import { createClient } from 'redis';
-import { TokenPayload } from '../types'
+import { createClient } from "redis";
+import { TokenPayload } from "../types";
 
 // Create a Redis client and connedsct
 const client = createClient({
-  url: process.env.REDIS_URL || 'redis://localhost:6379'
+  url: process.env.REDIS_URL || "redis://localhost:6379",
 });
 
-client.on('error', (err) => {
-  console.error('Redis Client Error', err);
+client.on("error", (err) => {
+  console.error("Redis Client Error", err);
 });
 
 (async () => {
@@ -26,12 +26,16 @@ export async function getRedisState(key: string): Promise<string | null> {
   }
 }
 
-export async function setRedisState(key: string, value: TokenPayload, days: number): Promise<void> {
+export async function setRedisState(
+  key: string,
+  value: TokenPayload,
+  days: number,
+): Promise<void> {
   try {
-    const expirationInSeconds = days * 24 * 60 * 60
+    const expirationInSeconds = days * 24 * 60 * 60;
     await client.set(key, JSON.stringify(value), { EX: expirationInSeconds });
     console.log(`Successfully set value in Redis with ${days}-day expiration`);
-    console.log('value is', await getRedisState(key));
+    console.log("value is", await getRedisState(key));
   } catch (error) {
     console.error(`Error setting Redis key ${key}:`, error);
   }
@@ -47,8 +51,8 @@ export async function delRedisState(key: string): Promise<void> {
 }
 
 // Remember to close the Redis client when your application shuts down
-process.on('SIGINT', async () => {
+process.on("SIGINT", async () => {
   await client.quit();
-  console.log('Redis client disconnected');
+  console.log("Redis client disconnected");
   process.exit(0);
 });
