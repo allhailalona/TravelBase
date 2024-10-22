@@ -20,6 +20,7 @@ export function GeneralProvider({ children }: { children: ReactNode }) {
   // Confused about the code below? Read the 'mod context...' commit description
   const userRole = useRef<UserRole>(undefined);
   const userId = useRef<number | undefined>(undefined);
+  const username = useRef<string | undefined>(undefined)
 
   return (
     <GeneralContext.Provider
@@ -30,6 +31,7 @@ export function GeneralProvider({ children }: { children: ReactNode }) {
         setFollowers,
         userRole,
         userId,
+        username
       }}
     >
       {children}

@@ -125,15 +125,6 @@ bonus:
   package it all in a docker-compose up command
   upload it to cloud NOTE
 
-
-Explain the JOIN thing, I think it's a good example of what u discussed with Gal previously
-Docker should have a specified port... perhaps notify Gal about it... Since he might have other ports active while attempting to connect
-we can't try to connect to each port like with the docker.compose.yml, which we should change as well
-
-left:
-edit vacations
-are u sure pop up for deletes
-
 show followers
 third filter for followers
 export csv

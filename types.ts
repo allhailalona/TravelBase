@@ -31,6 +31,7 @@ export type GeneralContext = {
   setFollowers: Dispatch<SetStateAction<Follower[] | undefined>>
   userRole: MutableRefObject<UserRole>
   userId: MutableRefObject<number | undefined>
+  username: MutableRefObject<string | undefined>
 }
 
 export type UserRole = 'user' | 'admin' | undefined

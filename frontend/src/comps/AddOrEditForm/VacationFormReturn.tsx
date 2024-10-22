@@ -176,17 +176,11 @@ const VacationForm = ({
 
         <div className="flex flex-col h-full">
           <div className="h-[90%] flex items-center justify-center">
-            {image.type === "Buffer" ? (
-              <img
-                src={image}
-                alt="Current vacation"
-                className="mt-2 max-w-full h-auto"
-              />
-            ) : (
-              <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
-                <FaImage className="text-gray-400 text-5xl" />
-              </div>
-            )}
+            <img
+              src={image}
+              alt="Current vacation"
+              className="mt-2 max-w-full h-auto"
+            />
           </div>
           <div className="mt-auto w-full">
             <div className="flex justify-end space-x-4">

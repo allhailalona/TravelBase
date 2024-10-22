@@ -1,5 +1,5 @@
-import { useState, useMemo, useEffect } from "react";
-import { Vacation, Follower } from "../../types";
+import { useState, useMemo, useEffect, useRef } from "react";
+import { Vacation, Follower } from "../../../types";
 
 export const useVacationFilters = (
   vacations: Vacation[],
@@ -7,33 +7,23 @@ export const useVacationFilters = (
   userId: number,
   followers: Follower[],
 ) => {
-  // Initialize sortOrder from localStorage or default to 'asc'
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">(() => {
-    return (localStorage.getItem("sortOrder") as "asc" | "desc") || "asc";
-  });
+  // Default values instead of reading from localStorage initially
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [filterType, setFilterType] = useState<"all" | "notBegun" | "active" | "followed">("all");
 
-  // Initialize filterType from localStorage or default to 'all'
-  const [filterType, setFilterType] = useState<
-    "all" | "notBegun" | "active" | "followed"
-  >(() => {
-    return (
-      (localStorage.getItem("filterType") as
-        | "all"
-        | "notBegun"
-        | "active"
-        | "followed") || "all"
-    );
-  });
-
-  // Save sortOrder to localStorage whenever it changes
+  // Only save to localStorage for user role
   useEffect(() => {
-    localStorage.setItem("sortOrder", sortOrder);
-  }, [sortOrder]);
+    if (role === "user") {
+      localStorage.setItem("sortOrder", sortOrder);
+    }
+  }, [sortOrder, role]);
 
-  // Save filterType to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem("filterType", filterType);
-  }, [filterType]);
+    if (role === "user") {
+      localStorage.setItem("filterType", filterType);
+    }
+  }, [filterType, role]);
+
 
   // Helper function to check if user is following a vacation
   function isUserFollowingVacation(
@@ -83,8 +73,6 @@ export const useVacationFilters = (
       }
     });
 
-    console.log("Filtered vacations:", filtered.length);
-
     // Sort vacations based on sortOrder (only for user role)
     const sorted = filtered.sort((a, b) => {
       if (role === "user") {
@@ -95,7 +83,6 @@ export const useVacationFilters = (
       return 0;
     });
 
-    console.log("Sorted vacations:", sorted.length);
     return sorted;
   }, [vacations, filterType, sortOrder, role, userId, followers]);
 
