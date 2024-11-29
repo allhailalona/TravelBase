@@ -7,7 +7,6 @@ export async function fetchVacations() {
   try {
     // Fetch vacation data
     const [vacations] = await pool.query("SELECT * FROM vacations");
-    console.log("vacations are", vacations);
 
     // Fetch followers data as well
     const [followers] = await pool.query("SELECT * FROM followers");
@@ -35,7 +34,7 @@ export async function fetchSingleVacation(id: number) {
 
 export async function addVacation(values: Omit<Vacation, "vacation_id">) {
   try {
-    console.log("hello from add vacation");
+    console.log("hello from add vacation values are", values);
 
     const volumePath = "/app/pictures";
 
