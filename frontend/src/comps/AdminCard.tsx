@@ -100,11 +100,11 @@ export default function AdminCards({ vacation }: { vacation: Vacation }) {
         </div>
       </div>
       <div className="bg-gray-400 p-4 flex flex-col bg-[#F0F1A1]">
-        <div className="flex flex-row justify-between">
+        <div className="flex flex-col justify-between">
           <h2 className="text-xl font-bold mb-2 text-gray-800">
             {vacation.destination}
           </h2>
-          <p className="text-gray-600 mb-2 line-clamp-2">
+          <p className="text-gray-600 mb-2 line-clamp-2 overflow-y-auto">
             {vacation.description}
           </p>
         </div>

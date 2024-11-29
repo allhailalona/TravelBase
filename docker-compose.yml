@@ -1,45 +1,60 @@
-version: '3.8'
-services:
-  db:
-    image: mysql:8.0
-    environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: vacation_db
-    volumes:
-      - ./mysql-data:/var/lib/mysql
-      - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
-      - pictures:/app/pictures
-    ports:
-      - "3306:3306"
+  services:
+    init-message:
+        image: busybox  # Smallest possible Docker image
+        command: echo "🚀 THIS WOULD TAKE A WHILE! PLEASE WAIT UNTIL U SEE ADMIN AND USER CREDENTIALS"
 
-  redis:
-    image: redis:alpine
-    ports:
-      - "6379:6379"
+    db:
+      image: mysql:8.0
+      environment:
+        MYSQL_ROOT_PASSWORD: rootpassword
+        MYSQL_DATABASE: vacation_db
+      volumes:
+        - ./mysql-data:/var/lib/mysql
+        - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
+        - pictures:/app/pictures
+      ports:
+        - "3306:3306"
 
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
-      - pictures:/app/pictures
-    depends_on:
-      - db
-      - redis
-    ports:
-      - "3000:3000"
-    environment:
-      - PORT=3000
-      - NODE_ENV=development
-      - DB_HOST=db
-      - DB_USER=root
-      - DB_PASSWORD=rootpassword
-      - DB_NAME=vacation_db
-      - DB_PORT=3306
-      - JWT_SECRET=a_random_secret_key
-      - REDIS_URL=redis://redis:6379
+    redis:
+      image: redis:alpine
+      ports:
+        - "6379:6379"
 
-volumes:
-  pictures:
+    backend:
+      build:
+        context: ./backend
+        dockerfile: Dockerfile
+      volumes:
+        - ./backend:/app
+        - /app/node_modules
+        - pictures:/app/pictures
+      depends_on:
+        - db
+        - redis
+      ports:
+        - "3000:3000"
+      environment:
+        - PORT=3000
+        - NODE_ENV=development
+        - DB_HOST=db
+        - DB_USER=root
+        - DB_PASSWORD=rootpassword
+        - DB_NAME=vacation_db
+        - DB_PORT=3306
+        - JWT_SECRET=a_random_secret_key
+        - REDIS_URL=redis://redis:6379
+
+    frontend:
+      build:
+        context: ./frontend
+        dockerfile: Dockerfile
+      volumes:
+        - ./frontend:/app
+        - /app/node_modules
+      ports:
+        - "5173:5173"
+      depends_on:
+        - backend
+
+  volumes:
+    pictures:

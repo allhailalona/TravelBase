@@ -35,7 +35,7 @@ const ImageSlider = ({ images }) => {
           key={index}
           src={src}
           alt={`Slide ${index + 1}`}
-          className={`absolute max-h-full max-w-full w-auto h-auto object-contain transition-opacity duration-500 ${
+          className={`absolute h-full w-full object-cover transition-opacity duration-500 ${
             index === currentIndex ? "opacity-100" : "opacity-0"
           } ${isTransitioning ? "blur-sm" : ""}`}
         />

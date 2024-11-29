@@ -1,6 +1,7 @@
 unit testing
 integration testing
 
-cloud?
-docker containers! - include 12 vacations with images! store them properly in the named volume
+containerize project: 
+  1. include 12 vacations with images! store them properly in the named volume 
+  2. containerize front and include in docker-compose.yml
 

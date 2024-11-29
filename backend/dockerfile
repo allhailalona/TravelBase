@@ -2,16 +2,22 @@ FROM node:20
 
 WORKDIR /app
 
-# Copy package.json and package-lock.json (if available)
-COPY package*.json ./
+# Install netcat for connection checks
+RUN apt-get update && apt-get install -y netcat-traditional
 
-# Install ALL dependencies, including devDependencies
+# Copy and configure wait script first
+COPY wait-and-init.sh ./
+RUN sed -i 's/\r$//' wait-and-init.sh && \
+    chmod +x wait-and-init.sh
+
+# Copy package files and install dependencies
+COPY package*.json ./
 RUN npm ci --include=dev
 
-# Copy the rest of your code
+# Copy remaining application files
 COPY . .
 
 ENV CHOKIDAR_USEPOLLING=true
 
-# Command to run the app
-CMD ["npm", "run", "server"]
+# Run wait script and server
+CMD ["/bin/sh", "-c", "./wait-and-init.sh & npm run server"]
