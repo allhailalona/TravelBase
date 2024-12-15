@@ -1,33 +1,30 @@
 import { pool } from "./MySQLConnection";
 import fs from "fs/promises";
 import path from "path";
-import { Vacation } from "../types";
+import { Vacation, Follower } from "../types";
 
-export async function fetchVacations() {
+export async function fetchVacations(): Promise<{ vacations: Vacation[]; followers: Follower[] }> {
   try {
-    // Fetch vacation data
     const [vacations] = await pool.query("SELECT * FROM vacations");
-
-    // Fetch followers data as well
     const [followers] = await pool.query("SELECT * FROM followers");
-    console.log("followers are", followers);
 
-    return { vacations, followers };
+    return { vacations: vacations as Vacation[], followers: followers as Follower[] };
   } catch (err) {
     console.error("err in fetchVacations in MySQLUtils.ts");
     throw err;
   }
 }
 
-export async function fetchSingleVacation(id: number) {
+
+export async function fetchSingleVacation(id: number): Promise<Vacation[]> {
   try {
     const [rows] = await pool.query(
       "SELECT * FROM vacations WHERE vacation_id = ?",
       [id],
     );
-    return rows;
+    return rows as Vacation[];
   } catch (err) {
-    console.error("err in fetchSingleVacations in MySQLUtils.ts");
+    console.error("err in fetchSingleVacation in MySQLUtils.ts");
     throw err;
   }
 }

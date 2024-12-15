@@ -102,6 +102,25 @@ const vacationsData = [
 ];
 
 async function initializeVacationsAndFollowers() {
+  // Clear existing data from tables in correct order
+  console.log('Clearing existing database data...');
+  try {
+    // Disable foreign key checks temporarily
+    await pool.query('SET FOREIGN_KEY_CHECKS = 0');
+    
+    // Truncate tables
+    await pool.query('TRUNCATE TABLE followers');
+    await pool.query('TRUNCATE TABLE vacations');
+    
+    // Re-enable foreign key checks
+    await pool.query('SET FOREIGN_KEY_CHECKS = 1');
+    
+    console.log('✅ Database cleared successfully');
+  } catch (err) {
+    console.error('❌ Failed to clear database:', err);
+    throw err;
+  }
+
   console.log('Starting vacation initialization...');
   for (const vacation of vacationsData) {
     try {

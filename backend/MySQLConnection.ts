@@ -15,3 +15,12 @@ export const pool = mysql.createPool({
   database: process.env.DB_NAME,
   port: process.env.DB_PORT,
 });
+
+// Test connection
+try {
+  const connection = await pool.getConnection();
+  console.log("Successfully connected to database");
+  connection.release();
+} catch (err) {
+  console.error("Database connection failed:", err);
+}

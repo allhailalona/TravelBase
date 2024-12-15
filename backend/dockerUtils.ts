@@ -2,22 +2,8 @@ import fs from "fs/promises";
 import path from "path";
 import { Vacation } from "../types";
 
-export async function fetchImageData(
-  imagePath: string,
-): Promise<string | Buffer> {
-  const fullPath = path.join("/app", imagePath);
-  try {
-    return await fs.readFile(fullPath);
-  } catch (err) {
-    console.error(
-      "err in fetchImage data from docker func in dockerUtils file",
-    );
-    throw err;
-  }
-}
-
 export async function handleFetchImageData(vacations: Vacation[]) {
-  const updatedVacations = await Promise.allSettled(
+  const settledResults = await Promise.allSettled(
     vacations.map(async (vacation: Vacation) => {
       try {
         const imageData = await fetchImageData(vacation.image_path);
@@ -31,14 +17,29 @@ export async function handleFetchImageData(vacations: Vacation[]) {
     }),
   );
 
-  // I'm quite sure using map only is feasible, but not considered a good pratice - map should return the same amount of items it takes.
-  // which is why I'm using filter to remove the promise 'fullfilled' status then map the result to extract the vacation array out of the promise's value item
-  return updatedVacations
+  // Filter fulfilled results and extract the value
+  const updatedVacations = settledResults
     .filter(
       (result): result is PromiseFulfilledResult<Vacation> =>
         result.status === "fulfilled",
     )
     .map((result) => result.value);
+
+  return updatedVacations
+}
+
+export async function fetchImageData(
+  imagePath: string,
+): Promise<string | Buffer> {
+  const fullPath = path.join("/app", imagePath);
+  try {
+    return await fs.readFile(fullPath);
+  } catch (err) {
+    console.error(
+      "err in fetchImage data from docker func in dockerUtils file",
+    );
+    throw err;
+  }
 }
 
 export async function fetchAllImages() {

@@ -1,4 +1,6 @@
 import express, { Request, Response } from "express";
+import { Server } from 'socket.io';
+import { createServer } from 'http';
 import cors from "cors";
 import dotenv from "dotenv";
 import path from "path";
@@ -14,7 +16,7 @@ import {
 } from "./MySQLUtils";
 import { handleFetchImageData, fetchAllImages } from "./dockerUtils";
 import { genTokens, authToken } from "./JWTTokensUtils";
-import { getRedisState, setRedisState } from "./redisUtils";
+import { Vacation, Follower } from '../types'
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,7 +24,12 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
 const app = express();
-
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+  cors: {
+    origin: "http://localhost:5173" // Your React app URL
+  }
+});
 app.use(cors());
 app.use(express.json());
 
@@ -36,7 +43,6 @@ app.post("/register", async (req: Request, res: Response) => {
     const { accessToken, refreshToken } = await genTokens(
       String(data.user.id),
       data.user.role,
-      username
     ); // Gen token
 
     // Return both tokens and user data without password
@@ -51,15 +57,14 @@ app.post("/register", async (req: Request, res: Response) => {
 
 app.get("/login", async (req: Request, res: Response) => {
   try {
+    console.log('hello from login listener')
     const loginInfo = req.query;
     const data = await login(loginInfo);
-
-    const username = `${data.user.firstName} ${data.user.lastName}`
+    console.log('login info is', data)
 
     const { accessToken, refreshToken } = await genTokens(
-      String(data.user.id),
-      data.user.role,
-      username
+      String(data.user.id), // Convert number from DB to string
+      data.user.role, // This is already a string
     ); // Gen token
 
     // Return both tokens and user data without password
@@ -81,54 +86,58 @@ app.get('/fetch-all-images', async (req: Request, res: Response) => {
   }
 })
 
-app.get("/vacations/fetch", authToken, async (req: Request, res: Response) => {
+app.post("/vacations/fetch", authToken, async (req: Request, res: Response) => {
   if (req.authError) {
-    // Access token has expired
-    console.log("access token is expired", req.authError.status);
-    return res
-      .status(req.authError.status)
-      .json({ error: req.authError.message, user: req.authError.user });
+    console.log("error in vacawtions/fetch authToken", req.authError); // descriptive log for dev
+    return res.status(500).json('internal server error'); // vague error for front
   }
+  try { 
+    console.log("auth successful userId is", req.userId);
+    console.log('userRole is', req.userRole);
 
-  try {
-    console.log("u were authenticated");
-    const role = req.user.userRole; // Get user role form authToken func
-    const userId = req.user.userId;
-    const username = req.user.username
+    const userId = req.userId;
 
-    /* Since we have only two options for fetching data - single / all
-      I create two functions, had we have several ways, for instnace - many not all
-      etc, I would prolly create one function to rule them all!
-    */
-    let vacations;
-    let followers;
-    if (req.query.id && req.query.id.length > 0) {
-      // Fetch a single vacation according to id
-      vacations = await fetchSingleVacation(req.query.id);
-    } else {
-      // Fetch all vacations and followers
+    let vacations: Vacation[] = [];
+    let followers: Follower[] | undefined;
+
+    if (req.body.id) { 
+      console.log('fething a single vacation')
+      vacations = await fetchSingleVacation(req.body.id);
+    } else { 
+      console.log('fetch all vacations');
       const data = await fetchVacations();
       vacations = data.vacations;
       followers = data.followers;
     }
 
-    /* Replace image_path with buffer - Not all images are included in the named volume, which is
-      why I use PromiseAllSettled, */
     const updatedVacations = await handleFetchImageData(vacations);
 
-    res.status(200).json({ updatedVacations, followers, role, userId, username });
+    // Dynamically build the response object
+    const toReturn = {
+      updatedVacations,
+      userId,
+      ...(followers && { followers }), // Include followers only if defined
+    };
+    console.log('toReturn userId is', toReturn.userId)
+
+    res.status(200).json(toReturn);
   } catch (err) {
+    console.error('err in vacations/fetch listener', err);
     res.status(500).json({ error: err.message || "Internal Server Error" });
   }
 });
 
-app.post("/vacations/add", async (req: Request, res: Response) => {
+app.post("/vacations/add", authToken, async (req: Request, res: Response) => {
+  if (req.authError) {
+    console.log("error in vacations/add authToken", req.authError);
+    return res.status(500).json('internal server error');
+  }
   try {
-    const values = req.body;
-    console.log("trying to add", values.image_path);
-    await addVacation(values);
+    const vacation = req.body.vacation;
+    console.log("trying to add", vacation.image_path);
+    await addVacation(vacation);
 
-    res.status(200).json("Success!");
+    res.sendStatus(200)
   } catch (err) {
     res
       .status(err.status || 500)
@@ -136,13 +145,17 @@ app.post("/vacations/add", async (req: Request, res: Response) => {
   }
 });
 
-app.post("/vacations/delete", async (req: Request, res: Response) => {
+app.post("/vacations/delete", authToken, async (req: Request, res: Response) => {
+  if (req.authError) {
+    console.log("error in vacations/delete authToken", req.authError);
+    return res.status(500).json('internal server error');
+  }
   try {
     const id = req.body.id;
     console.log("about to delete id", id);
     await deleteVacation(id);
 
-    res.status(200).json("Success!");
+    res.sendStatus(200)
   } catch (err) {
     res
       .status(err.status || 500)
@@ -150,45 +163,57 @@ app.post("/vacations/delete", async (req: Request, res: Response) => {
   }
 });
 
-app.put("/vacations/edit", async (req: Request, res: Response) => {
-  try {
-    console.log("about to edit", req.body.vacation_id);
-    const vacation = req.body;
-    console.log("vacation is", vacation);
-    await editVacation(vacation);
-
-    res.status(200).json("Edit Successful!");
-  } catch (err) {
-    res
-      .status(err.status || 500)
-      .json({ error: err.message || "Internal Server Error" });
-  }
-});
-
-app.put("/vacations/updateFollow", async (req: Request, res: Response) => {
-  try {
-    const { vacationId, userId } = req.body;
-    await updateFollow(vacationId, userId);
-
-    res.sendStatus(200); // I'll handle sucess message in the front directly
-  } catch (err) {
-    res
-      .status(err.status || 500)
-      .json({ error: err.message || "Internal Server Error" });
-  }
-});
-
-// Tokens and such listeners
-app.get("/user-role", authToken, async (req: Request, res: Response) => {
+app.put("/vacations/edit", authToken, async (req: Request, res: Response) => {
   if (req.authError) {
+    console.log("error in vacations/edit authToken", req.authError);
+    return res.status(500).json('internal server error');
+  }
+  try {
+    console.log("about to edit", req.body.vacation);
+
+    await editVacation(req.body.vacation);
+
+    res.sendStatus(200)
+  } catch (err) {
+    res
+      .status(err.status || 500)
+      .json({ error: err.message || "Internal Server Error" });
+  }
+});
+
+app.put("/vacations/updateFollow", authToken, async (req: Request, res: Response) => {
+  if (req.authError) {
+    console.log('error in updateFollow authToken', req.authError)
     return res
       .status(req.authError.status)
       .json({ error: req.authError.message, user: req.authError.user });
   }
-
   try {
-    const role = req.user.userRole;
-    res.status(200).json({ role });
+    const { vacationId, userId } = req.body;
+    console.log('hello from vacations/updateFollwo vacationId is', vacationId, 'userId is', userId)
+    await updateFollow(vacationId, userId);
+
+    res.sendStatus(200); 
+  } catch (err) {
+    res
+      .status(err.status || 500)
+      .json({ error: err.message || "Internal Server Error" });
+  }
+});
+
+// Extract userRole from access token - this is for route protection
+app.post("/user-role", authToken, async (req: Request, res: Response) => {
+  if (req.authError) {
+    console.log('error in user-role authToken', req.authError)
+    return res
+      .status(req.authError.status)
+      .json({ error: req.authError.message, user: req.authError.user });
+  }
+  try {
+    console.log('hello from user-role listener')
+    const userRole = req.userRole;
+    console.log('express listener userRole is', userRole)
+    res.status(200).json({ userRole });
   } catch (err) {
     res
       .status(err || 500)
@@ -196,38 +221,9 @@ app.get("/user-role", authToken, async (req: Request, res: Response) => {
   }
 });
 
-app.post("/refresh-tokens", async (req: Request, res: Response) => {
-  try {
-    const authHeader = req.headers["authorization"];
-    const refreshToken = authHeader && authHeader.split(" ")[1];
-
-    // Fetch refresh token details to generate new tokens
-    const data = await getRedisState(refreshToken);
-    if (data === null) {
-      return res
-        .status(401)
-        .json({ error: "Invalid or expired refresh token" });
-    }
-
-    // Gen new Tokens
-    const { userId, userRole } = data;
-    const newTokens = await genTokens(userId, userRole);
-
-    // Overwrite new tokens with new ones
-    await setRedisState(refreshToken, { userId, userRole }, 3);
-
-    res.status(200).json({
-      accessToken: newTokens.accessToken,
-      refreshToken: newTokens.refreshToken,
-    });
-  } catch (err) {
-    res
-      .status(err.status || 500)
-      .json({ error: err.message || "Internal Server Error" });
-  }
-});
-
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`listening on http://localhost:3000`);
+httpServer.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
+
+export { io };

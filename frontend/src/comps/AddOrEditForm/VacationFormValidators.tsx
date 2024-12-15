@@ -1,4 +1,4 @@
-export const validateRequired = (value: any) => {
+export const validateRequired = (value) => {
   if (!value) return "This field is required";
   return null;
 };
@@ -20,7 +20,6 @@ export const validatePrice = (value: number | null) => {
 };
 
 export const validateBase64Image = (value: string, isEditMode: boolean) => {
-  console.log('value is', value)
   if (!isEditMode && !value) return "This field is required";
   if (!value) return null; // Empty is okay in edit mode
 

@@ -1,7 +1,8 @@
   services:
-    init-message:
-        image: busybox  # Smallest possible Docker image
-        command: echo "🚀 THIS WOULD TAKE A WHILE! PLEASE WAIT UNTIL U SEE ADMIN AND USER CREDENTIALS"
+    # The block below is shown anyways after the images are loaded... Which takes several minutes - which renders the message useless
+    # init-message:
+    #     image: busybox  # Smallest possible Docker image
+    #     command: echo "🚀 THIS WOULD TAKE A WHILE! PLEASE WAIT UNTIL U SEE ADMIN AND USER CREDENTIALS"
 
     db:
       image: mysql:8.0
@@ -33,6 +34,7 @@
         - redis
       ports:
         - "3000:3000"
+      # The environment variables are directly defined below, pay attention that you'd need to copy-paste them when running the app without containers
       environment:
         - PORT=3000
         - NODE_ENV=development

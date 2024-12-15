@@ -1,0 +1,24 @@
+I'm interested in userRole for UI route protection
+I'm interested in userId for DB ops AND for sorting favorite vacations in front - it should be stored there a sa ref!]
+both paths are going through the authToken, and both return the same... Adding flags will increase complexity, and it don't really matter anyways since the decode will produce both results anyways AND it's only about passing data hither and dither - since this is a small app, It's a compromise I make - simplicitly over lower resources usage
+
+three possible scenarios in the JWTTokenUtils.ts file
+1. if token is NOT present in localStorage - redirect to login
+2. if token is expired - we try to refresh:
+  a. refresh token and return values direectly without decoding again
+3. if verification fails - redirect to login
+
+every action the user/admin takes will go through this verification process - authToken next func
+
+
+# Frontend Route Protection
+
+## Core Challenge
+- Client-side code can't be fully protected from user inspection/modification
+- Role-based UI elements will always be visible to determined users
+
+## Practical Solutions
+- Verify userRole on component mount
+- Use obscure role names ('celestial_observer' vs 'admin')
+- Focus security on backend protection
+- Treat UI exposure as low-risk since critical operations require server authorization

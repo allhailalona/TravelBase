@@ -9,7 +9,6 @@ import {
   validateBase64Image,
   validateDateRange,
 } from "./VacationFormValidators";
-import { FaImage } from "react-icons/fa";
 
 const { TextArea } = Input;
 

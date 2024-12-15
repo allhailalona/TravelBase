@@ -1,7 +1,2 @@
-unit testing
-integration testing
-
-containerize project: 
-  1. include 12 vacations with images! store them properly in the named volume 
-  2. containerize front and include in docker-compose.yml
-
+find a way to update screen without an unnecessary refresh - it causes vacations fetch to run again!
+tsproof prettier eslint in a seperate commit

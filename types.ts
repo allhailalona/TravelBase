@@ -10,13 +10,15 @@ export type User = {
 }
 
 export type Vacation = {
-  vacation_id: number
+  vacation_id: string | undefined // To be coherent
   destination: string
   description: string
   starting_date: string
   ending_date: string
   price: string // To keep the fraction
-  image_path: string | Buffer
+  image_path: {
+    data: string
+  }
 }
 
 export type Follower = {
@@ -29,9 +31,10 @@ export type GeneralContext = {
   setVacations: Dispatch<SetStateAction<Vacation[] | undefined>>
   followers: Follower[] | undefined
   setFollowers: Dispatch<SetStateAction<Follower[] | undefined>>
-  userRole: MutableRefObject<UserRole>
-  userId: MutableRefObject<number | undefined>
   username: MutableRefObject<string | undefined>
+  userId: MutableRefObject<string | undefined>
+  userRole: MutableRefObject<string | undefined>
+  verifyUserRole: () => Promise<void>
 }
 
 export type UserRole = 'user' | 'admin' | undefined

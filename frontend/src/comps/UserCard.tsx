@@ -1,6 +1,5 @@
 import React from "react";
 import { format } from "date-fns";
-import { authAndData } from "../hooks n custom funcs/authAndData";
 import { convertBufferToBase64 } from '../hooks n custom funcs/imageUtils'
 import { useGeneralContext } from "../context/GeneralContext";
 import { Vacation } from "../../../types";
@@ -18,31 +17,28 @@ export default function UserCards({
   isUserFollowingVacation: boolean;
 }) {
   const { userId } = useGeneralContext();
-  console.log('vacation is', vacation)
 
   const updateFollow = async () => {
-    const { role } = await authAndData("none");
-    if (role === "user") {
-      const res = await fetch("http://localhost:3000/vacations/updateFollow", {
+    try {
+      await fetch("http://localhost:3000/vacations/updateFollow", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          _at: localStorage.getItem('accessToken'),
+          _rt: localStorage.getItem('refreshToken'),
           vacationId: vacation.vacation_id,
           userId: userId.current,
         }),
       });
-
-      if (!res) {
-        const errorData = await res.json();
-        throw new Error(
-          `Error in fetching data: ${errorData || "unknown error"}`,
-        );
-      } else {
-        window.location.reload();
-      }
+  
+      window.location.reload();
+    } catch (err) {
+      console.error('error in UserCard updateFollow fetch request', err)
+      throw err // Stop execution
     }
+
   };
 
   const dataUrl = convertBufferToBase64(vacation.image_path.data)

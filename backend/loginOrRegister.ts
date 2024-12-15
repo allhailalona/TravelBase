@@ -42,7 +42,7 @@ export async function register(values: User) {
       user,
     };
   } catch (err) {
-    console.error("err in register func is loginOrRegister.ts");
+    console.error("err in register func is loginOrRegister.ts", err);
     throw err;
   }
 }
@@ -58,6 +58,7 @@ export async function login(loginInfo: User) {
 
     // Again, error handling is intentionally vague
     if (rows.length === 0) {
+      // I should make a seperation - the backend errors could be clear in the back, then turn vague in the express listener...
       throw { status: 500, message: "Something Went Wrong" }; // Invalid Credentials
     }
 
@@ -69,14 +70,11 @@ export async function login(loginInfo: User) {
       message: "User Logged In Successfully",
       user: {
         id: user.user_id,
-        firstName: user.first_name,
-        lastName: user.last_name,
-        email: user.email,
         role: user.role,
       },
     };
   } catch (err) {
-    console.error("err in login func in loginOrRegister.ts");
+    console.error("err in login func in loginOrRegister.ts", err);
     throw err;
   }
 }

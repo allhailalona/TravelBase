@@ -1,3 +1,4 @@
+-- Initiate DB here, the actual content is injected in initVacationsAndFollowers.ts
 SELECT 'Hello from init.sql - Script started' AS ''; -- log
 
 CREATE DATABASE IF NOT EXISTS vacation_db;
@@ -47,4 +48,3 @@ INSERT INTO users (first_name, last_name, email, password, role) VALUES
 ('Ian', 'Anderson', 'ian@example.com', 'passwordvwx', 'user'),
 ('Julia', 'Thomas', 'julia@example.com', 'passwordyz1', 'user');
 
--- The vacations and followers are inserted seperately in the initVacationsAndFollowers.ts file

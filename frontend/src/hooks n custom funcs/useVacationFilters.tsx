@@ -1,11 +1,10 @@
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Vacation, Follower } from "../../../types";
 
 export const useVacationFilters = (
-  vacations: Vacation[],
-  role: string,
   userId: number,
-  followers: Follower[],
+  vacations: Vacation[] | undefined,
+  followers: Follower[] | undefined,
 ) => {
   // Default values instead of reading from localStorage initially
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
@@ -13,16 +12,9 @@ export const useVacationFilters = (
 
   // Only save to localStorage for user role
   useEffect(() => {
-    if (role === "user") {
-      localStorage.setItem("sortOrder", sortOrder);
-    }
-  }, [sortOrder, role]);
-
-  useEffect(() => {
-    if (role === "user") {
-      localStorage.setItem("filterType", filterType);
-    }
-  }, [filterType, role]);
+    localStorage.setItem("sortOrder", sortOrder);
+    localStorage.setItem("filterType", filterType);
+  }, [sortOrder, filterType]);
 
 
   // Helper function to check if user is following a vacation
@@ -31,10 +23,6 @@ export const useVacationFilters = (
     vacationId: number,
     followers: Array<{ user_id: number; vacation_id: number }>,
   ): boolean {
-    console.log(
-      `Checking if user ${userId} is following vacation ${vacationId}`,
-    );
-
     const isFollowing = followers.some(
       (follower) =>
         Number(follower.user_id) === Number(userId) &&
@@ -73,18 +61,15 @@ export const useVacationFilters = (
       }
     });
 
-    // Sort vacations based on sortOrder (only for user role)
+    // Sort vacations based on sortOrder 
     const sorted = filtered.sort((a, b) => {
-      if (role === "user") {
-        const dateA = new Date(a.starting_date).getTime();
-        const dateB = new Date(b.starting_date).getTime();
-        return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
-      }
-      return 0;
+      const dateA = new Date(a.starting_date).getTime();
+      const dateB = new Date(b.starting_date).getTime();
+      return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
     });
 
     return sorted;
-  }, [vacations, filterType, sortOrder, role, userId, followers]);
+  }, [vacations, filterType, sortOrder, userId, followers]);
 
   // Function to toggle sort order
   const toggleSortOrder = () =>

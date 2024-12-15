@@ -1,31 +1,35 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Form, Input, Button, message } from "antd";
-import { useGeneralContext } from "../context/GeneralContext";
 import { User } from "../../../types";
 
 export default function LoginPage(): JSX.Element {
   const navigate = useNavigate();
 
   const handleLogin = async (values: User) => {
-    const params = new URLSearchParams(values as Record<string, string>);
-    const url = `http://localhost:3000/login?${params.toString()}`;
-
-    const res = await fetch(url, { method: "GET" });
-
-    // The error handling here is intentionally vague as instructed to increase security
-    if (!res.ok) {
-      message.error("Something Went Wrong, Try Again!");
-      throw new Error(`Error in login request`);
+    try {
+      const params = new URLSearchParams(values as Record<string, string>);
+      const url = `http://localhost:3000/login?${params.toString()}`;
+  
+      const res = await fetch(url, { method: "GET" });
+  
+      // The error handling here is intentionally vague as instructed to increase security
+      if (!res.ok) {
+        message.error("Something Went Wrong, Try Again!");
+        throw new Error(`Error in login request`);
+      }
+  
+      const data = await res.json();
+      localStorage.setItem("accessToken", data.accessToken);
+      localStorage.setItem("refreshToken", data.refreshToken);
+  
+      // Done!
+      message.success("Login Successful");
+      navigate("/vacations/fetch");
+    } catch (err) {
+      console.error('err in handleLogin in login page', err)
+      throw err
     }
-
-    const data = await res.json();
-    localStorage.setItem("accessToken", data.accessToken);
-    localStorage.setItem("refreshToken", data.refreshToken);
-
-    // Done!
-    message.success("Login Successful");
-    navigate("/vacations/fetch");
   };
 
   return (

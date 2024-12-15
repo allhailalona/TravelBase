@@ -1,4 +1,2 @@
-- Fixed filter persistence across sessions by resetting localStorage on mount.
-- Add logout button for admin/user
-- Show images from actual vacations in the slider
-- Show user/admin name on navbar 
+Greatly simplify JWT flow
+Clear vacations and followers db before injection

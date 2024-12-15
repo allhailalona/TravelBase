@@ -1,8 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
-import { authAndData } from "../hooks n custom funcs/authAndData";
-import { convertBufferToBase64, isValidBase64 } from '../hooks n custom funcs/imageUtils'
+import { convertBufferToBase64 } from '../hooks n custom funcs/imageUtils'
 import { message, Popconfirm } from "antd";
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import {
@@ -19,26 +18,29 @@ export default function AdminCards({ vacation }: { vacation: Vacation }) {
   const navigate = useNavigate();
 
   const deleteCard = async (e: React.MouseEvent) => {
-    e.stopPropagation(); // Add this line
-    const { role } = await authAndData("none");
-    if (role === "admin") {
-      const res = await fetch("http://localhost:3000/vacations/delete", {
+    e.stopPropagation(); // Has something to do with the event cycle...
+    try {
+      console.log('about to make request to delete')
+      await fetch("http://localhost:3000/vacations/delete", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ id: vacation.vacation_id }),
+        body: JSON.stringify({ 
+          _at: localStorage.getItem('accessToken'),
+          _rt: localStorage.getItem('refreshToken'),
+          id: vacation.vacation_id 
+        }),
       });
-
-      if (!res.ok) {
-        const errorData = res.json();
-        message.error(`Error while deleting vacation: ${errorData}`);
-        throw new Error(`Error while delete vacation: ${errorData}`);
-      }
 
       message.success("Successfully deleted vacation! Refreshing page...");
       window.location.reload();
+    } catch (err) {
+      // Errors are vague here... Which is why we don't need custom error handling with a !res.ok conditional like we usually do
+      console.error('err in deleteCard in AdminCard.tsx', err)
+      throw err
     }
+
   };
 
   const editCard = () => {

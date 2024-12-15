@@ -16,7 +16,7 @@ client.on("error", (err) => {
 })();
 
 // Types are designed to handle tokens
-export async function getRedisState(key: string): Promise<string | null> {
+export async function getRedisState(key: any): Promise<any> {
   try {
     const value = await client.get(key);
     return value ? JSON.parse(value) : null; // Return null if no key found

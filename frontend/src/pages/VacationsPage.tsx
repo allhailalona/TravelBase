@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Pagination, Button } from "antd";
 import { useNavigate } from "react-router-dom";
 import { useGeneralContext } from "../context/GeneralContext";
-import { authAndData } from "../hooks n custom funcs/authAndData";
 import { useVacationFilters } from "../hooks n custom funcs/useVacationFilters";
 import FilterControls from "../comps/FilterControls";
 import AdminCard from "../comps/AdminCard";
@@ -11,25 +10,51 @@ import { Vacation, Follower } from "../../../types";
 
 export default function VacationsPage(): JSX.Element {
   const navigate = useNavigate();
-  const { vacations, setVacations, followers, setFollowers, userRole, userId, username } = useGeneralContext();
+  const { vacations, setVacations,
+        followers, setFollowers,
+        userId, username, 
+        userRole,
+        verifyUserRole 
+        } = useGeneralContext();
 
-  // Separate cleanup effect that runs first
+  // Reset filters and sorters
   useEffect(() => {
     localStorage.removeItem("sortOrder");
     localStorage.removeItem("filterType");
-  }, []); // Empty dependency array ensures it runs once on mount
+  }, []); 
 
-  // Fetch vacation data and user role
+  // Fetch data then update userRole
   useEffect(() => {
     const fetchData = async () => {
-      const data = await authAndData("all");
-      console.log("user name is", data);
-      setVacations(data.vacations);
-      setFollowers(data.followers);
-      userRole.current = data.role;
-      userId.current = data.userId;
-      username.current = data.username
-      console.log('updated username to ', data.username)
+      try {
+        console.log('fetching data in vacationsPage useEffect')
+        const res = await fetch('http://localhost:3000/vacations/fetch', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            _at: localStorage.getItem('accessToken'),
+            _rt: localStorage.getItem('refreshToken')
+          })
+        });    
+  
+        if (!res.ok) throw new Error('Cannot load vacations page');
+  
+        const data = await res.json();
+  
+        setVacations(data.updatedVacations);
+        setFollowers(data.followers);
+        userId.current = data.userId;
+        username.current = data.username;
+        
+        console.log('hello vac page ard calling verify userrole')
+        await verifyUserRole();
+        
+      } catch (err) {
+        console.error('Error in VacationsPage fetch:', err);
+        throw err;
+      }
     };
     fetchData();
   }, []);
@@ -42,9 +67,8 @@ export default function VacationsPage(): JSX.Element {
     setFilterType,
     toggleSortOrder,
   } = useVacationFilters(
-    vacations,
-    userRole.current,
     userId.current,
+    vacations,
     followers,
   );
 
@@ -63,12 +87,6 @@ export default function VacationsPage(): JSX.Element {
     setCurrentPage(page);
   };
 
-  /* 
-    Since this project is relatively small, certain compromises are made to save time and improve performance over security and privacy
-    * A more secure yet cumbersome and more intensive approach would be to perform the functions below in the backend, so the entire followers data 
-      is not present in the front
-    * The isUserFollowingVacation function, has a copy in useVacationFilters.tsx, moving the func to a seperate file would be overcomplication
-  */
   function countFollowers(followers: Follower[], targetVacationId: number) {
     return followers.reduce((count, follower) => {
       // If the vacation_id matches the target, increment the count
@@ -80,15 +98,16 @@ export default function VacationsPage(): JSX.Element {
     }, 0); // Start the count at 0
   }
 
+  /* 
+    The project prioritizes performance and simplicity over security.
+    Functions like `isUserFollowingVacation` are handled on the frontend to save time,
+    avoiding complexity by keeping them in `useVacationFilters.tsx`.
+  */
   function isUserFollowingVacation(
     userId: number,
     vacationId: number,
     followers: Array<{ user_id: number; vacation_id: number }>,
   ): boolean {
-    console.log(
-      `Checking if user ${userId} is following vacation ${vacationId}`,
-    );
-
     const isFollowing = followers.some(
       (follower) =>
         Number(follower.user_id) === Number(userId) &&
@@ -98,9 +117,14 @@ export default function VacationsPage(): JSX.Element {
     return isFollowing;
   }
 
-  // Render appropriate card based on user role
+  const logOut = () => {
+    localStorage.clear()
+    navigate('/login')
+  }
+
+// Render appropriate card based on user role
   const renderVacationCard = (vacation: Vacation) => {
-    return userRole.current === "admin" ? (
+    return userRole === "admin" ? (
       <AdminCard key={vacation.vacation_id} vacation={vacation} />
     ) : (
       <UserCard
@@ -116,16 +140,11 @@ export default function VacationsPage(): JSX.Element {
     );
   };
 
-  const logOut = () => {
-    localStorage.clear()
-    navigate('/login')
-  }
-
   return (
     <div className="px-8 bg-gray-800">
-      {/* Display user role */}
+    {/* Display user role */}
       {/* Render filter controls for user role */}
-      {userRole.current === "user" && (
+      {userRole === "user" && (
         <div className='flex flex-row gap-2 items-center'>
           <Button onClick={logOut} size='large' className='font-bold'>Log Out</Button>
           <FilterControls
@@ -139,7 +158,7 @@ export default function VacationsPage(): JSX.Element {
       )}
 
       {/* Render Add button for admin role */}
-      {userRole.current === "admin" && (
+      {userRole === "admin" && (
         <div className="flex flex-row gap-3 items-center">
           <Button onClick={logOut} size='large' className='font-bold'>Log Out</Button>
           <button
@@ -157,11 +176,13 @@ export default function VacationsPage(): JSX.Element {
           <h2 className='font-bold text-white text-xl flex justify-end'>Welcome {username.current}!</h2>
         </div>
       )}
+
+      {/* Render vacations according to user role */}
       {vacations && vacations.length > 0 ? (
         <>
           {/* Grid layout for vacation cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {currentVacations.map(renderVacationCard)}
+            {currentVacations.map(renderVacationCard)} {/* Map vacations here */}
           </div>
 
           {/* Pagination component */}
