@@ -7,10 +7,10 @@ import {
 } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import RegisterationPage from "./pages/RegisterationPage";
-import ImagesSlide from "./comps/ImagesSlide";
+import ImagesSlide from "./components/ImagesSlide";
 import VacationsPage from "./pages/VacationsPage";
-import VacationFormMainLogic from "./comps/AddOrEditForm/VacationFormMainLogic";
-import FollowersStats from "./comps/FollowersStats";
+import VacationFormMainLogic from "./components/AddOrEditForm/VacationFormMainLogic";
+import FollowersStats from "./components/FollowersStats";
 import { convertBufferToBase64 } from './hooks n custom funcs/imageUtils'
 
 export default function App(): JSX.Element {

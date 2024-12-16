@@ -29,10 +29,8 @@ export async function fetchSingleVacation(id: number): Promise<Vacation[]> {
   }
 }
 
-export async function addVacation(values: Omit<Vacation, "vacation_id">) {
+export async function addVacation(values: Vacation) {
   try {
-    console.log("hello from add vacation values are", values);
-
     const volumePath = "/app/pictures";
 
     // Extract the base64 data and image type

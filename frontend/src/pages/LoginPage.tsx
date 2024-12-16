@@ -10,12 +10,12 @@ export default function LoginPage(): JSX.Element {
     try {
       const params = new URLSearchParams(values as Record<string, string>);
       const url = `http://localhost:3000/login?${params.toString()}`;
+      console.log('url is', url)
   
       const res = await fetch(url, { method: "GET" });
   
       // The error handling here is intentionally vague as instructed to increase security
       if (!res.ok) {
-        message.error("Something Went Wrong, Try Again!");
         throw new Error(`Error in login request`);
       }
   
@@ -28,7 +28,7 @@ export default function LoginPage(): JSX.Element {
       navigate("/vacations/fetch");
     } catch (err) {
       console.error('err in handleLogin in login page', err)
-      throw err
+      message.error("Something Went Wrong, Try Again!");
     }
   };
 

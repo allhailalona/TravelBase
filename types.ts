@@ -10,15 +10,13 @@ export type User = {
 }
 
 export type Vacation = {
-  vacation_id: string | undefined // To be coherent
+  vacation_id?: string
   destination: string
   description: string
-  starting_date: string
-  ending_date: string
   price: string // To keep the fraction
-  image_path: {
-    data: string
-  }
+  starting_date: Date
+  ending_date: Date
+  image_path?: { data: string } | string // Covering both front and back here
 }
 
 export type Follower = {

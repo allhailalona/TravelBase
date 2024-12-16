@@ -3,9 +3,9 @@ import { Pagination, Button } from "antd";
 import { useNavigate } from "react-router-dom";
 import { useGeneralContext } from "../context/GeneralContext";
 import { useVacationFilters } from "../hooks n custom funcs/useVacationFilters";
-import FilterControls from "../comps/FilterControls";
-import AdminCard from "../comps/AdminCard";
-import UserCard from "../comps/UserCard";
+import FilterControls from "../components/FilterControls";
+import AdminCard from "../components/AdminCard";
+import UserCard from "../components/UserCard";
 import { Vacation, Follower } from "../../../types";
 
 export default function VacationsPage(): JSX.Element {

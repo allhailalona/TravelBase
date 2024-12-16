@@ -16,6 +16,7 @@ import {
 } from "./MySQLUtils";
 import { handleFetchImageData, fetchAllImages } from "./dockerUtils";
 import { genTokens, authToken } from "./JWTTokensUtils";
+import { registerSchema, loginSchema, addVacationSchema, editVacationSchema } from './zod.ts'
 import { Vacation, Follower } from '../types'
 
 const __filename = fileURLToPath(import.meta.url);
@@ -35,7 +36,8 @@ app.use(express.json());
 
 app.post("/register", async (req: Request, res: Response) => {
   try {
-    const registerInfo = req.body;
+    console.log('hello from register listener req.body is', req.body)
+    const registerInfo = await registerSchema.parseAsync(req.body)
     const data = await register(registerInfo);
 
     const username = `${data.user.firstName} ${data.user.lastName}`
@@ -43,22 +45,19 @@ app.post("/register", async (req: Request, res: Response) => {
     const { accessToken, refreshToken } = await genTokens(
       String(data.user.id),
       data.user.role,
-    ); // Gen token
+    );
 
-    // Return both tokens and user data without password
     res.status(200).json({ accessToken, refreshToken, data });
   } catch (err) {
-    console.error("err in /register request in server.ts");
-    res
-      .status(err.status || 500)
-      .json({ error: err.message || "Internal Server Error" });
+    console.error(`error in register listener`, err)
+    res.status(500).json('Internal server error') // Intentionally vague, the real error is shown above
   }
 });
 
 app.get("/login", async (req: Request, res: Response) => {
   try {
     console.log('hello from login listener')
-    const loginInfo = req.query;
+    const loginInfo = await loginSchema.parseAsync(req.query)
     const data = await login(loginInfo);
     console.log('login info is', data)
 
@@ -70,10 +69,8 @@ app.get("/login", async (req: Request, res: Response) => {
     // Return both tokens and user data without password
     res.status(200).json({ accessToken, refreshToken, data });
   } catch (err) {
-    console.error("err in /login request in server.ts");
-    res
-      .status(err.status || 500)
-      .json({ error: err.message || "Internal Server Error" });
+    console.error("err in /login request in server.ts", err); // The real error is here
+    res.status(500).json('Unkonwn internal error') // The error sent to front is vague
   }
 });
 
@@ -82,7 +79,8 @@ app.get('/fetch-all-images', async (req: Request, res: Response) => {
     const pictures = await fetchAllImages()
     res.status(200).json(pictures)
   } catch (err) {
-    res.status(err.status || 500).json({ error: err.message || 'Unknown Server Error'})
+    console.error('err in /fetch-all-images listener', err)
+    res.status(500).json('Internal server error')
   }
 })
 
@@ -133,15 +131,13 @@ app.post("/vacations/add", authToken, async (req: Request, res: Response) => {
     return res.status(500).json('internal server error');
   }
   try {
-    const vacation = req.body.vacation;
-    console.log("trying to add", vacation.image_path);
-    await addVacation(vacation);
+    const vacationToAddInfo = await addVacationSchema.parseAsync(req.body.vacation)
+    await addVacation(vacationToAddInfo);
 
     res.sendStatus(200)
   } catch (err) {
-    res
-      .status(err.status || 500)
-      .json({ error: err.message || "Internal Server Error" });
+    console.error('error in vacations/add error is', err)
+    res.status(500).json('Internal server error')
   }
 });
 
@@ -157,9 +153,8 @@ app.post("/vacations/delete", authToken, async (req: Request, res: Response) => 
 
     res.sendStatus(200)
   } catch (err) {
-    res
-      .status(err.status || 500)
-      .json({ error: err.message || "Internal Server Error" });
+    console.error('err in vacations/delete', err)
+    res.status(500).json('Internal server error')
   }
 });
 
@@ -169,15 +164,13 @@ app.put("/vacations/edit", authToken, async (req: Request, res: Response) => {
     return res.status(500).json('internal server error');
   }
   try {
-    console.log("about to edit", req.body.vacation);
-
-    await editVacation(req.body.vacation);
+    const vacationToEditInfo = await editVacationSchema.parseAsync(req.body.vacation)
+    await editVacation(vacationToEditInfo);
 
     res.sendStatus(200)
   } catch (err) {
-    res
-      .status(err.status || 500)
-      .json({ error: err.message || "Internal Server Error" });
+    console.error('err in vacations/edit', err)
+    res.status(500).json('Internal server error')
   }
 });
 
@@ -195,9 +188,8 @@ app.put("/vacations/updateFollow", authToken, async (req: Request, res: Response
 
     res.sendStatus(200); 
   } catch (err) {
-    res
-      .status(err.status || 500)
-      .json({ error: err.message || "Internal Server Error" });
+    console.error('err in vacations/updateFollow', err)
+    res.status(500).json('Internal server error')
   }
 });
 
@@ -215,9 +207,8 @@ app.post("/user-role", authToken, async (req: Request, res: Response) => {
     console.log('express listener userRole is', userRole)
     res.status(200).json({ userRole });
   } catch (err) {
-    res
-      .status(err || 500)
-      .json({ error: err.message || "Internal Server Error" });
+    console.error('err in /user-role listener', err)
+    res.status(500).json('Internal server error')
   }
 });
 
