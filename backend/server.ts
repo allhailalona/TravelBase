@@ -5,7 +5,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
-import { register, login } from "./loginOrRegister";
+import { register, login } from "./utils/loginOrRegister.ts";
 import {
   fetchVacations,
   fetchSingleVacation,
@@ -13,9 +13,9 @@ import {
   deleteVacation,
   editVacation,
   updateFollow,
-} from "./MySQLUtils";
-import { handleFetchImageData, fetchAllImages } from "./dockerUtils";
-import { genTokens, authToken } from "./JWTTokensUtils";
+} from "./utils/MySQLUtils.ts";
+import { handleFetchImageData, fetchAllImages } from "./utils/picturesUtils.ts";
+import { genTokens, authToken } from "./utils/JWTTokensUtils.ts";
 import { registerSchema, loginSchema, addVacationSchema, editVacationSchema } from './zod.ts'
 import { Vacation, Follower } from '../types'
 
@@ -36,18 +36,21 @@ app.use(express.json());
 
 app.post("/register", async (req: Request, res: Response) => {
   try {
-    console.log('hello from register listener req.body is', req.body)
     const registerInfo = await registerSchema.parseAsync(req.body)
-    const data = await register(registerInfo);
 
-    const username = `${data.user.firstName} ${data.user.lastName}`
+    // In the case of registeration, we already have the values in req.body, however, for consistency purposes it's passed back to the server listener - 
+    // Note the data isn't being refeteched, it's the same 'data' received in the front, userId and role are used for JWT creation of course
+    const { firstName, lastName, userId, role } = await register(registerInfo); 
+    console.log('role to be passed is ', role)
+
+    const username = `${firstName} ${lastName}`
 
     const { accessToken, refreshToken } = await genTokens(
-      String(data.user.id),
-      data.user.role,
+      String(userId),
+      role, // role is validated seperately for security and readability purposes
     );
 
-    res.status(200).json({ accessToken, refreshToken, data });
+    res.status(200).json({ accessToken, refreshToken, username, userId });
   } catch (err) {
     console.error(`error in register listener`, err)
     res.status(500).json('Internal server error') // Intentionally vague, the real error is shown above
@@ -58,16 +61,14 @@ app.get("/login", async (req: Request, res: Response) => {
   try {
     console.log('hello from login listener')
     const loginInfo = await loginSchema.parseAsync(req.query)
-    const data = await login(loginInfo);
-    console.log('login info is', data)
+    const { id, role, username} = await login(loginInfo);
 
     const { accessToken, refreshToken } = await genTokens(
-      String(data.user.id), // Convert number from DB to string
-      data.user.role, // This is already a string
-    ); // Gen token
+      String(id), // Convert number from DB to string
+      role, // This is already a string
+    ); 
 
-    // Return both tokens and user data without password
-    res.status(200).json({ accessToken, refreshToken, data });
+    res.status(200).json({ accessToken, refreshToken, id, role, username });
   } catch (err) {
     console.error("err in /login request in server.ts", err); // The real error is here
     res.status(500).json('Unkonwn internal error') // The error sent to front is vague
@@ -90,11 +91,6 @@ app.post("/vacations/fetch", authToken, async (req: Request, res: Response) => {
     return res.status(500).json('internal server error'); // vague error for front
   }
   try { 
-    console.log("auth successful userId is", req.userId);
-    console.log('userRole is', req.userRole);
-
-    const userId = req.userId;
-
     let vacations: Vacation[] = [];
     let followers: Follower[] | undefined;
 
@@ -108,15 +104,13 @@ app.post("/vacations/fetch", authToken, async (req: Request, res: Response) => {
       followers = data.followers;
     }
 
-    const updatedVacations = await handleFetchImageData(vacations);
+    const updatedVacations = await handleFetchImageData(vacations); // Convert vacations image buffers to Base64
 
     // Dynamically build the response object
     const toReturn = {
-      updatedVacations,
-      userId,
+      updatedVacations, // One vacations only if edit mode or all vacations from vacations/fetch
       ...(followers && { followers }), // Include followers only if defined
     };
-    console.log('toReturn userId is', toReturn.userId)
 
     res.status(200).json(toReturn);
   } catch (err) {

@@ -35,7 +35,7 @@ export type GeneralContext = {
   verifyUserRole: () => Promise<void>
 }
 
-export type UserRole = 'user' | 'admin' | undefined
+export type UserRole = 'user' | 'admin' 
 
 export type Tokens = {
   accessToken: string

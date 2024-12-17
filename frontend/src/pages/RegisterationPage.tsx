@@ -1,10 +1,12 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Form, Input, Button, message } from "antd"
+import { useGeneralContext } from '../context/GeneralContext'
 import { User } from "../../../types";
 
 export default function RegisterationPage(): JSX.Element {
   const navigate = useNavigate();
+  const { username, userId } = useGeneralContext()
 
   const handleRegisteration = async (values: User) => {
     try {
@@ -21,11 +23,14 @@ export default function RegisterationPage(): JSX.Element {
         throw new Error(`Unkonwn error occured in registeration page`)
       }
 
-      console.log('register request was successful')
       const data = await res.json();
+
       localStorage.setItem("accessToken", data.accessToken);
       localStorage.setItem("refreshToken", data.refreshToken);
   
+      userId.current = data.userId
+      username.current = `Welcome newcomer, ${data.username}`
+
       message.success("Registeration Successful");
       navigate("/vacations/fetch");
     } catch (err) {

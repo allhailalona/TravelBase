@@ -171,7 +171,7 @@ export default function AddVacationForm() {
   if (loading) return <p>Loading...</p>;
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="h-full w-full flex justify-center items-center flex-col">
       <h1 className="text-2xl text-white font-bold mb-6">
         {id ? "Edit" : "Add"} a Vacation
       </h1>

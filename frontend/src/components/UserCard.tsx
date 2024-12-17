@@ -44,59 +44,64 @@ export default function UserCards({
   const dataUrl = convertBufferToBase64(vacation.image_path.data)
 
   return (
-    <div className="rounded-xl overflow-hidden">
+    <div className="bg-gray-900 rounded-xl overflow-hidden shadow-xl w-full max-w-sm
+                hover:shadow-2xl hover:scale-[1.02] hover:shadow-indigo-500/10
+                transition-all duration-300 cursor-pointer">
       <div className="relative">
-        {/* Button for following */}
         <div
           onClick={updateFollow}
-          className="glass followers-tint w-24 !p-0 py-1 mb-2 absolute top-2 left-2 flex flex-row gap-8 font-xl font-bold hover:cursor-pointer"
+          className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm px-5 py-2.5 rounded-full 
+                   flex items-center gap-3 cursor-pointer hover:bg-black/70 transition-all duration-200"
         >
           {isUserFollowingVacation ? (
-            <FaHeart size={20} />
+            <FaHeart className="text-red-500" size={20} />
           ) : (
-            <FaRegHeart size={20} />
+            <FaRegHeart className="text-white" size={20} />
           )}
-          {totalFollowers}
+          <span className="text-white text-lg font-medium">{totalFollowers}</span>
         </div>
-
-        {/* Image Display */}
+  
         {vacation.image_path.type === "Buffer" ? (
           <img
             src={dataUrl}
             alt={vacation.destination}
-            className="w-full h-48 object-cover"
+            className="w-full h-52 object-cover"
           />
         ) : (
-          <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
-            <FaImage className="text-gray-400 text-5xl" />
+          <div className="w-full h-52 bg-gray-800 flex items-center justify-center">
+            <FaImage className="text-gray-600 text-6xl" />
           </div>
         )}
       </div>
-      <div className="bg-[#E5E7EB]">
-        <div
-          className="glass !p-0 py-2 text-md !rounded-none !rounded-t-xl font-bold !shadow-none flex justify-center items-center"
-          style={{ background: "rgba(255, 255, 0, 0.4)" }}
-        >
-          <FaCalendarAlt className="mr-2" />
-          <span>
+  
+      <div className="bg-gradient-to-r from-gray-800 to-gray-900 p-4">
+        <div className="flex items-center justify-center text-gray-200 gap-2">
+          <FaCalendarAlt size={16} />
+          <span className="text-base font-bold tracking-wide">
             {format(new Date(vacation.starting_date), "MMM d, yyyy")} -
             {format(new Date(vacation.ending_date), "MMM d, yyyy")}
           </span>
         </div>
       </div>
-      <div className="bg-gray-400 p-4 flex flex-col bg-[#F0F1A1]">
-        <div className="flex flex-col justify-between">
-          <h2 className="text-xl font-bold mb-2 text-gray-800">
-            {vacation.destination}
-          </h2>
-          <p className="text-gray-600 mb-2 line-clamp-2 overflow-y-auto">
-            {vacation.description}
-          </p>
-        </div>
-        <div className="flex items-center justify-center mt-4">
-          <div className="flex justify-center items-center py-2 px-4 bg-green-600 rounded-lg px-2 text-xl text-white font-bold">
-            <FaDollarSign className="mr-1" />
-            <span>{vacation.price}</span>
+  
+      <div className="p-6 bg-gray-900">
+        <h2 className="text-2xl font-bold text-white mb-4">
+          {vacation.destination}
+        </h2>
+        <p className="text-gray-300 text-lg line-clamp-2 mb-6">
+          {vacation.description}
+        </p>
+        
+        <div className="flex justify-center">
+          <div className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500
+                        text-white px-8 py-3 rounded-xl
+                        flex items-center gap-2 font-bold 
+                        shadow-[0_0_20px_rgba(16,185,129,0.15)]
+                        hover:shadow-[0_0_25px_rgba(16,185,129,0.25)]
+                        hover:from-emerald-500 hover:to-teal-400
+                        transition-all duration-300 ring-1 ring-emerald-400/50">
+            <FaDollarSign size={22} className="text-emerald-200" />
+            <span className="text-2xl">{vacation.price}</span>
           </div>
         </div>
       </div>

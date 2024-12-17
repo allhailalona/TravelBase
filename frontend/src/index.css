@@ -16,11 +16,28 @@
   align-items: center;
 }
 
-.followers-tint {
-  background: rgba(255, 161, 161, 0.8);
-  transition: background 0.3s ease;
+
+.custom-pagination .ant-pagination-item {
+  background: #1f2937;
+  border-color: #374151;
 }
 
-.followers-tint:hover {
-  background: rgba(255, 196, 196, 0.9);
+.custom-pagination .ant-pagination-item a {
+  color: #9ca3af;
+}
+
+.custom-pagination .ant-pagination-item-active {
+  background: #10b981;
+  border-color: #10b981;
+}
+
+.custom-pagination .ant-pagination-item-active a {
+  color: white;
+}
+
+.custom-pagination .ant-pagination-prev button,
+.custom-pagination .ant-pagination-next button {
+  background: #1f2937;
+  border-color: #374151;
+  color: #9ca3af;
 }

@@ -1,62 +1,58 @@
-  services:
-    # The block below is shown anyways after the images are loaded... Which takes several minutes - which renders the message useless
-    # init-message:
-    #     image: busybox  # Smallest possible Docker image
-    #     command: echo "🚀 THIS WOULD TAKE A WHILE! PLEASE WAIT UNTIL U SEE ADMIN AND USER CREDENTIALS"
+name: travelbase
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: vacation_db
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+      - ./backend/setup/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - pictures:/app/pictures
+    ports:
+      - "3306:3306"
 
-    db:
-      image: mysql:8.0
-      environment:
-        MYSQL_ROOT_PASSWORD: rootpassword
-        MYSQL_DATABASE: vacation_db
-      volumes:
-        - ./mysql-data:/var/lib/mysql
-        - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
-        - pictures:/app/pictures
-      ports:
-        - "3306:3306"
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
 
-    redis:
-      image: redis:alpine
-      ports:
-        - "6379:6379"
+  backend:
+    build:
+      context: ./backend
+      dockerfile: setup/Dockerfile
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - pictures:/app/pictures
+    depends_on:
+      - db
+      - redis
+    ports:
+      - "3000:3000"
+    # The environment variables are directly defined below, pay attention that you'd need to copy-paste them when running the app without containers
+    environment:
+      - PORT=3000
+      - NODE_ENV=development
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASSWORD=rootpassword
+      - DB_NAME=vacation_db
+      - DB_PORT=3306
+      - JWT_SECRET=a_random_secret_key
+      - REDIS_URL=redis://redis:6379
 
-    backend:
-      build:
-        context: ./backend
-        dockerfile: Dockerfile
-      volumes:
-        - ./backend:/app
-        - /app/node_modules
-        - pictures:/app/pictures
-      depends_on:
-        - db
-        - redis
-      ports:
-        - "3000:3000"
-      # The environment variables are directly defined below, pay attention that you'd need to copy-paste them when running the app without containers
-      environment:
-        - PORT=3000
-        - NODE_ENV=development
-        - DB_HOST=db
-        - DB_USER=root
-        - DB_PASSWORD=rootpassword
-        - DB_NAME=vacation_db
-        - DB_PORT=3306
-        - JWT_SECRET=a_random_secret_key
-        - REDIS_URL=redis://redis:6379
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
 
-    frontend:
-      build:
-        context: ./frontend
-        dockerfile: Dockerfile
-      volumes:
-        - ./frontend:/app
-        - /app/node_modules
-      ports:
-        - "5173:5173"
-      depends_on:
-        - backend
-
-  volumes:
-    pictures:
+volumes:
+  pictures:

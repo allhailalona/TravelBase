@@ -45,10 +45,7 @@ export default function VacationsPage(): JSX.Element {
   
         setVacations(data.updatedVacations);
         setFollowers(data.followers);
-        userId.current = data.userId;
-        username.current = data.username;
-        
-        console.log('hello vac page ard calling verify userrole')
+
         await verifyUserRole();
         
       } catch (err) {
@@ -141,63 +138,85 @@ export default function VacationsPage(): JSX.Element {
   };
 
   return (
-    <div className="px-8 bg-gray-800">
-    {/* Display user role */}
-      {/* Render filter controls for user role */}
+    <div className="px-8 min-h-screen bg-gray-900">
+      {/* User Navigation Bar */}
       {userRole === "user" && (
-        <div className='flex flex-row gap-2 items-center'>
-          <Button onClick={logOut} size='large' className='font-bold'>Log Out</Button>
-          <FilterControls
-            sortOrder={sortOrder}
-            filterType={filterType}
-            toggleSortOrder={toggleSortOrder}
-            setFilterType={setFilterType}
-          />
-          <h2 className='font-bold text-white text-xl'>Welcome {username.current}!</h2>
-        </div>
-      )}
-
-      {/* Render Add button for admin role */}
-      {userRole === "admin" && (
-        <div className="flex flex-row gap-3 items-center">
-          <Button onClick={logOut} size='large' className='font-bold'>Log Out</Button>
-          <button
-            onClick={() => navigate("/vacations/add")}
-            className="bg-white p-2 my-2 rounded-lg font-bold"
-          >
-            Add A Vacation
-          </button>
-          <button
-            onClick={() => navigate("/vacations/stats")}
-            className="bg-white p-2 my-2 rounded-lg font-bold"
-          >
-            Stats
-          </button>
-          <h2 className='font-bold text-white text-xl flex justify-end'>Welcome {username.current}!</h2>
-        </div>
-      )}
-
-      {/* Render vacations according to user role */}
-      {vacations && vacations.length > 0 ? (
-        <>
-          {/* Grid layout for vacation cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {currentVacations.map(renderVacationCard)} {/* Map vacations here */}
-          </div>
-
-          {/* Pagination component */}
-          <div className="mt-8 flex justify-center">
-            <Pagination
-              current={currentPage}
-              total={filteredAndSortedVacations.length}
-              pageSize={itemsPerPage}
-              onChange={handlePageChange}
-              showSizeChanger={false}
+        <div className='flex flex-row justify-between items-center py-6'>
+          <div className='flex items-center gap-4'>
+            <Button 
+              onClick={logOut} 
+              className='bg-red-500 hover:bg-red-600 text-white border-none px-6 py-2 h-auto font-semibold'
+            >
+              Log Out
+            </Button>
+            <FilterControls
+              sortOrder={sortOrder}
+              filterType={filterType}
+              toggleSortOrder={toggleSortOrder}
+              setFilterType={setFilterType}
             />
           </div>
-        </>
+          <h2 className='text-white text-xl font-bold'>
+            <span className="text-emerald-400">{username.current}</span>
+          </h2>
+        </div>
+      )}
+  
+      {/* Admin Navigation Bar */}
+      {userRole === "admin" && (
+        <div className="flex justify-between items-center py-6">
+          <div className="flex items-center gap-4">
+            <Button 
+              onClick={logOut} 
+              className='bg-red-500 hover:bg-red-600 text-white border-none px-6 py-2 h-auto font-bold text-xl'
+            >
+              Log Out
+            </Button>
+            <button
+              onClick={() => navigate("/vacations/add")}
+              className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2 rounded-lg font-bold text-xl
+                        transition-all duration-200 shadow-lg"
+            >
+              Add Vacation
+            </button>
+            <button
+              onClick={() => navigate("/vacations/stats")}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-bold text-xl
+                        transition-all duration-200 shadow-lg"
+            >
+              View Stats
+            </button>
+          </div>
+          <h2 className='text-white text-xl font-bold'>
+            <span className="text-purple-400">{username.current}</span>
+          </h2>
+        </div>
+      )}
+  
+      {vacations && vacations.length > 0 ? (
+        <div className="pb-24"> {/* Increased padding to account for fixed pagination */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {currentVacations.map(renderVacationCard)}
+          </div>
+
+          {/* Fixed Pagination */}
+          <div className="fixed bottom-0 left-0 right-0 py-4 bg-gray-900/80 backdrop-blur-sm border-t border-gray-800">
+            <div className="flex justify-center">
+              <Pagination
+                current={currentPage}
+                total={filteredAndSortedVacations.length}
+                pageSize={itemsPerPage}
+                onChange={handlePageChange}
+                showSizeChanger={false}
+                className="custom-pagination"
+              />
+            </div>
+          </div>
+        </div>
       ) : (
-        <p>No vacations available or loading...</p>
+        <div className="flex justify-center items-center h-64">
+          <p className="text-gray-400 text-xl">No vacations available or loading...</p>
+        </div>
       )}
     </div>
   );

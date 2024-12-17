@@ -1,10 +1,12 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Form, Input, Button, message } from "antd";
+import { useGeneralContext } from '../context/GeneralContext'
 import { User } from "../../../types";
 
 export default function LoginPage(): JSX.Element {
   const navigate = useNavigate();
+  const { username, userId } = useGeneralContext()
 
   const handleLogin = async (values: User) => {
     try {
@@ -20,10 +22,13 @@ export default function LoginPage(): JSX.Element {
       }
   
       const data = await res.json();
+      
       localStorage.setItem("accessToken", data.accessToken);
       localStorage.setItem("refreshToken", data.refreshToken);
   
-      // Done!
+      userId.current = data.id
+      username.current = `Welcome back, ${data.username}` // Use welcome back for logins
+
       message.success("Login Successful");
       navigate("/vacations/fetch");
     } catch (err) {
