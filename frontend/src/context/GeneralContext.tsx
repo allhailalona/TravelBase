@@ -12,7 +12,7 @@ import type {
   Follower,
   UserRole,
   GeneralContext,
-} from "../../../types";
+} from "../../types";
 
 const GeneralContext = createContext<GeneralContext | undefined>(undefined);
 

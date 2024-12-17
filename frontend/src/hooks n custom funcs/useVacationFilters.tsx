@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { Vacation, Follower } from "../../../types";
+import { Vacation, Follower } from "../../types";
 
 export const useVacationFilters = (
   userId: number,

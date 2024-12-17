@@ -1,8 +1,7 @@
-import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Form, Input, Button, message } from "antd";
 import { useGeneralContext } from '../context/GeneralContext'
-import { User } from "../../../types";
+import { User } from "../../types";
 
 export default function LoginPage(): JSX.Element {
   const navigate = useNavigate();
@@ -25,8 +24,7 @@ export default function LoginPage(): JSX.Element {
       
       localStorage.setItem("accessToken", data.accessToken);
       localStorage.setItem("refreshToken", data.refreshToken);
-  
-      userId.current = data.id
+
       username.current = `Welcome back, ${data.username}` // Use welcome back for logins
 
       message.success("Login Successful");

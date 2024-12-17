@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { convertBufferToBase64 } from '../hooks n custom funcs/imageUtils'
@@ -11,7 +11,7 @@ import {
   FaPencilAlt,
   FaTrashAlt,
 } from "react-icons/fa";
-import { Vacation } from "../../../types";
+import { Vacation } from "../../../moshe";
 import "../index.css";
 
 export default function AdminCards({ vacation }: { vacation: Vacation }) {

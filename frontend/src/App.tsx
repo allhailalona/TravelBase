@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -21,7 +21,8 @@ export default function App(): JSX.Element {
       try {
         const res = await fetch('http://localhost:3000/fetch-all-images', {method: 'GET'})
 
-        if (!res) {
+        if (!res.ok) {
+          // This case the error should be descriptive... Nothing to hide here
           const errorData = await res.json()
           throw new Error (`Error in useEffect helperFunc fetch all images App.tsx ${errorData}`)
         }

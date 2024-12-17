@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Pagination, Button } from "antd";
 import { useNavigate } from "react-router-dom";
 import { useGeneralContext } from "../context/GeneralContext";
@@ -6,7 +6,7 @@ import { useVacationFilters } from "../hooks n custom funcs/useVacationFilters";
 import FilterControls from "../components/FilterControls";
 import AdminCard from "../components/AdminCard";
 import UserCard from "../components/UserCard";
-import { Vacation, Follower } from "../../../types";
+import { Vacation, Follower } from "../../types";
 
 export default function VacationsPage(): JSX.Element {
   const navigate = useNavigate();
@@ -42,7 +42,11 @@ export default function VacationsPage(): JSX.Element {
         if (!res.ok) throw new Error('Cannot load vacations page');
   
         const data = await res.json();
+        console.log('hello from vacations/fetch call in useEffect from data is', data)
   
+        // userId is saved here everytime the the component is loaded so following mechanism works
+        // react refs, as well as other hooks are RESET on page reload, and since this func is running on every reload we make sure userId is ALWAYS present and always true to the backend
+        userId.current = data.userId
         setVacations(data.updatedVacations);
         setFollowers(data.followers);
 
@@ -119,7 +123,7 @@ export default function VacationsPage(): JSX.Element {
     navigate('/login')
   }
 
-// Render appropriate card based on user role
+  // Render appropriate card based on user role
   const renderVacationCard = (vacation: Vacation) => {
     return userRole === "admin" ? (
       <AdminCard key={vacation.vacation_id} vacation={vacation} />

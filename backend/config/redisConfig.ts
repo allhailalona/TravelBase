@@ -1,5 +1,5 @@
 import { createClient } from "redis";
-import { TokenPayload } from "../../types";
+import { TokenPayload } from "../types.js";
 
 // Create a Redis client and connedsct
 const client = createClient({
@@ -16,7 +16,7 @@ client.on("error", (err) => {
 })();
 
 // Types are designed to handle tokens
-export async function getRedisState(key: any): Promise<any> {
+export async function getRedisState(key: string): Promise<string | null> {
   try {
     const value = await client.get(key);
     return value ? JSON.parse(value) : null; // Return null if no key found

@@ -1,8 +1,7 @@
-import React from "react";
 import { Button } from "antd";
 import { useNavigate } from "react-router-dom";
 import { useGeneralContext } from "../context/GeneralContext";
-import { Vacation } from "../../../types";
+import { Vacation } from "../../types";
 import {
   BarChart,
   Bar,

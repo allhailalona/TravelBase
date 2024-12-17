@@ -1,6 +1,5 @@
-import React from "react";
 import { Radio } from "antd";
-import { FilterControlsProps } from "../../../types";
+import { FilterControlsProps } from "../../types";
 
 export default function FilterControls({
   sortOrder,

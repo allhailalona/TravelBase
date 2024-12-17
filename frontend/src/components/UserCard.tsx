@@ -1,8 +1,7 @@
-import React from "react";
 import { format } from "date-fns";
 import { convertBufferToBase64 } from '../hooks n custom funcs/imageUtils'
 import { useGeneralContext } from "../context/GeneralContext";
-import { Vacation } from "../../../types";
+import { Vacation } from "../../types";
 import { FaCalendarAlt, FaDollarSign, FaImage, FaHeart } from "react-icons/fa";
 import { FaRegHeart } from "react-icons/fa6";
 import "../index.css";
@@ -13,7 +12,7 @@ export default function UserCards({
   isUserFollowingVacation,
 }: {
   vacation: Vacation;
-  totalFollowrs: number;
+  totalFollowers: number;
   isUserFollowingVacation: boolean;
 }) {
   const { userId } = useGeneralContext();

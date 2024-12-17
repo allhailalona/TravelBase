@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const ImageSlider = ({ images }) => {
+export default function ImageSlider({ images }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
@@ -59,5 +59,3 @@ const ImageSlider = ({ images }) => {
     </div>
   );
 };
-
-export default ImageSlider;

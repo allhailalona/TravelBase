@@ -1,6 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
-import { Vacation } from "../../types";
+import { Vacation } from "../types.js";
 
 export async function handleFetchImageData(vacations: Vacation[]) {
   const settledResults = await Promise.allSettled(
@@ -8,7 +8,7 @@ export async function handleFetchImageData(vacations: Vacation[]) {
       try {
         const imageData = await fetchImageData(vacation.image_path);
         return { ...vacation, image_path: imageData };
-      } catch (err) {
+      } catch (err: unknown) {
         console.error(
           `Failed to fetch image for vacation ${vacation.vacation_id}: ${err.message}`,
         );
@@ -25,7 +25,7 @@ export async function handleFetchImageData(vacations: Vacation[]) {
     )
     .map((result) => result.value);
 
-  return updatedVacations
+  return updatedVacations;
 }
 
 export async function fetchImageData(
@@ -44,24 +44,23 @@ export async function fetchImageData(
 
 export async function fetchAllImages() {
   try {
-    const picturesDir = await fs.readdir('/app/pictures')
+    const picturesDir = await fs.readdir("/app/pictures");
 
     const picturesBuffers = await Promise.allSettled(
       picturesDir.map(async (picture) => {
-        const filePath = path.join('/app/pictures', picture)
-        const buffer = await fs.readFile(filePath)
-        return buffer
-      })
-    )
+        const filePath = path.join("/app/pictures", picture);
+        const buffer = await fs.readFile(filePath);
+        return buffer;
+      }),
+    );
 
     const buffers = picturesBuffers
-      .filter(result => result.status === 'fulfilled')
-      .map(result => (result as PromiseFulfilledResult<Buffer>).value) // Add .value here
+      .filter((result) => result.status === "fulfilled")
+      .map((result) => (result as PromiseFulfilledResult<Buffer>).value); // Add .value here
 
-    return buffers
-
+    return buffers;
   } catch (err) {
-    console.error('Error in fetchAllImages:', err)
-    throw err
+    console.error("Error in fetchAllImages:", err);
+    throw err;
   }
 }

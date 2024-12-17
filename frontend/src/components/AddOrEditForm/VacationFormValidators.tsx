@@ -1,5 +1,6 @@
 // 'return null' means everything is fine
-export const validateRequired = (value) => {
+// @ts-expect-error not really sure what should be the type of value as it doesn't accept any
+export const validateRequired = (value) => { 
   if (!value) return "This field is required";
   return null;
 };

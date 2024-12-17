@@ -1,14 +1,20 @@
-import { pool } from "../config/MySQLConfig";
+import { pool } from "../config/MySQLConfig.js";
 import fs from "fs/promises";
 import path from "path";
-import { Vacation, Follower } from "../../types";
+import { Vacation, Follower } from "../types.js";
 
-export async function fetchVacations(): Promise<{ vacations: Vacation[]; followers: Follower[] }> {
+export async function fetchVacations(): Promise<{
+  vacations: Vacation[];
+  followers: Follower[];
+}> {
   try {
     const [vacations] = await pool.query("SELECT * FROM vacations");
     const [followers] = await pool.query("SELECT * FROM followers");
 
-    return { vacations: vacations as Vacation[], followers: followers as Follower[] };
+    return {
+      vacations: vacations as Vacation[],
+      followers: followers as Follower[],
+    };
   } catch (err) {
     console.error("err in fetchVacations in MySQLUtils.ts");
     throw err;
@@ -34,7 +40,7 @@ export async function addVacation(values: Vacation) {
 
     // Extract the base64 data and image type
     const matches = values.image_path.match(
-      /^data:image\/([A-Za-z-+\/]+);base64,(.+)$/,
+      /^data:image\/([A-Za-z-+\/]+);base64,(.+)$/, // eslint-disable-line
     );
     if (!matches || matches.length !== 3) {
       throw new Error("Invalid image data");
@@ -108,11 +114,12 @@ export async function deleteVacation(id: number) {
     await pool.query("ROLLBACK");
     console.error("Error in deleteVacation:", err);
     throw err;
-  }
+  } 
 }
 
 export async function editVacation(vacation: Vacation) {
   try {
+    console.log('about to edit vacation id is', vacation.vacation_id)
     const volumePath = "/app/pictures";
 
     // Extract the base64 data and image type
@@ -164,15 +171,21 @@ export async function editVacation(vacation: Vacation) {
       WHERE vacation_id = ?
     `;
 
-    await pool.query(query, [
+    const values = [
       vacation.destination,
-      vacation.description,
+      vacation.description, 
       vacation.starting_date,
       vacation.ending_date,
       vacation.price,
       updatedImagePath,
       vacation.vacation_id,
-    ]);
+    ];
+    
+    console.log('SQL Query:', query);
+    console.log('Values:', values);
+    
+    const result = await pool.query(query, values);
+    console.log('Query result:', result);
 
     console.log("Vacation updated successfully");
   } catch (err) {
@@ -191,7 +204,7 @@ export async function updateFollow(vacationId: number, userId: number) {
     );
 
     // Check if the entry exists
-    const [rows]: any = await pool.query(
+    const [rows] = await pool.query(
       "SELECT * FROM followers WHERE user_id = ? AND vacation_id = ?",
       [userId, vacationId],
     );

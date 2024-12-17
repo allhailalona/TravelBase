@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Form, message } from "antd";
 import { useNavigate, useParams } from "react-router-dom";
 import { useGeneralContext } from "../../context/GeneralContext";
-import { authAndData } from "../../hooks n custom funcs/authAndData";
 import VacationForm from "./VacationFormReturn";
 import { validateDateRange } from "./VacationFormValidators";
-import { Vacation } from "../../../../types";
+import { Vacation } from "../../../types";
 
 export default function AddVacationForm() {
   /* Two possible modes - 
@@ -107,8 +106,7 @@ export default function AddVacationForm() {
   }, [tempVacation, form]);
 
   // Form submission handler
-  const onFinish = async (values) => {
-    console.log("onFinish clicked values are", values);
+  const onFinish = async (values: Vacation) => {
     const dateRangeError = validateDateRange(startDate!, endDate!);
     if (dateRangeError) {
       message.error(dateRangeError);
@@ -117,10 +115,10 @@ export default function AddVacationForm() {
 
     // Arrange data in form to send to backend in a nice manner
     const vacation: Vacation = {
-      vacation_id: id,
+      vacation_id: id, // There is a confusion here that should be addressed in the future - the DB vacation_id is a NUMBER, yet converted to a string in the front, for now I'll modify the zod validation - it's not a crucial security concern
       destination: values.destination,
       description: values.description,
-      price: values.price.toString(),
+      price: values.price,
       starting_date: startDate!.toISOString().split("T")[0],
       ending_date: endDate!.toISOString().split("T")[0],
       image_path: values.imagePath || (id ? originalImage : ""), // Use original image in edit mode if no new image is provided

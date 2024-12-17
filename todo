@@ -1,10 +1,2 @@
-restlying commit
-fix overflow scrollbar issue
-scrollbar styling
-
-seperate commit to tsproof eslint prettier
-
-irrelevant:
-try to package exe file again
-
-practice leetcode questions
+make sure original imgae is restored after removing a preview in edit mode
+make sure the evacation is indeed edited

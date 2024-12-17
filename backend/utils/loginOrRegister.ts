@@ -1,10 +1,10 @@
-import { pool } from "../config/MySQLConfig";
-import { User } from "../../types";
+import { pool } from "../config/MySQLConfig.js";
+import { User } from "../types.js";
 
 export async function register(values: User) {
   try {
     // Check if email already exists
-    let [rows] = await pool.query("SELECT * FROM users WHERE email = ?", [
+    const [rows] = await pool.query("SELECT * FROM users WHERE email = ?", [
       values.email,
     ]);
 
@@ -29,7 +29,12 @@ export async function register(values: User) {
     const userId = res.insertId;
 
     // userId and role will be used to create a JWT, the user role is always 'user' since admins ae registered directly using DB
-    return { firstName: values.firstName, lastName: values.lastName, userId, role: 'user' };
+    return {
+      firstName: values.firstName,
+      lastName: values.lastName,
+      userId,
+      userRole: "user",
+    };
   } catch (err) {
     console.error("err in register func is loginOrRegister.ts", err);
     throw err;
@@ -44,17 +49,17 @@ export async function login(loginInfo: User) {
     );
 
     if (rows.length === 0) {
-      throw new Error('No user found that matches the credentials provided')
+      throw new Error("No user found that matches the credentials provided");
     }
 
     const user = rows[0];
-    const username = `${user.first_name} ${user.last_name}`
+    const username = `${user.first_name} ${user.last_name}`;
 
     return {
-      id: user.user_id,
-      role: user.role,
-      username
-    }
+      userId: user.user_id,
+      userRole: user.role,
+      username,
+    };
   } catch (err) {
     console.error("err in login func in loginOrRegister.ts", err);
     throw err;
